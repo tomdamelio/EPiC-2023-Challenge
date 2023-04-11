@@ -23,7 +23,7 @@ env/
 .idea/
 
 # Data
-data/
+#data/
 *.csv
 *.tsv
 *.xlsx
