@@ -30,6 +30,9 @@ data/
 *.hdf5
 *.sqlite
 
+# Data
+data/
+
 # Models
 results/models/
 
