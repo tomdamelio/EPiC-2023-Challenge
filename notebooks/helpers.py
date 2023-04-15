@@ -69,47 +69,150 @@ def zip_csv_files(folder_path_1, folder_path_2):
     return zipped_files
 
 
-def sliding_window_with_step(arr, window_size, step):
+def sliding_window_with_step(df, window_size, step):
+    arr = df.values
+    nrows = ((arr.shape[0] - window_size) // step) + 1
+    n = arr.strides[0]
+    strided_arr = np.lib.stride_tricks.as_strided(
+        arr,
+        shape=(nrows, window_size, arr.shape[1]),
+        strides=(step * n, n, arr.strides[1]),
+    )
+    return strided_arr
+
+def preprocess(df_physiology, df_annotations, aggregate=None, window_duration=1000, step_duration=20, resample_rate=50):
     """
-    Create a sliding window view of an array with a given window size and step.
-
-    Args:
-        arr (array-like): Input array.
-        window_size (int): The size of the sliding window.
-        step (int): The step size between windows.
-
+    Preprocesses the input data for further processing and modeling.
+    
+    Parameters:
+    ----------
+    df_physiology : pd.DataFrame
+        The input physiological data with columns: time, and physiological signals.
+    df_annotations : pd.DataFrame
+        The annotations DataFrame with columns: time and arousal.
+    aggregate : list of str, optional
+        The list of aggregation functions to apply on the input data.
+        Available options are: 'mean', 'std', 'enlarged', or any combination of these.
+        If None, it will return the 3D matrix as is.
+    window_duration : int, optional
+        The duration of the sliding window in milliseconds (default is 1000).
+    step_duration : int, optional
+        The step duration of the sliding window in milliseconds (default is 20).
+    resample_rate : int, optional
+        The resampling rate in Hz (default is 50).
+    
     Returns:
-        numpy.ndarray: An array of windows.
+    -------
+    X : np.ndarray
+        The preprocessed input data (features) as a 2D array.
+    y : np.ndarray
+        The arousal values corresponding to each window.
+    numeric_column_indices : list of int
+        The indices of numeric columns in the input data.
+    categorical_column_indices : list of int
+        The indices of categorical columns in the input data.
     """
-    return np.array([arr[i:i + window_size] for i in range(0, len(arr) - window_size + 1, step)])
+    df_physiology['time'] = pd.to_timedelta(df_physiology['time'], unit='ms')
+    df_physiology.set_index('time', inplace=True)
 
-def preprocess(df_physiology, df_annotations, window_size=100, step=5, resample_factor=10):
-    """
-    Preprocesses the physiology and annotations dataframes.
+    resample_interval = int(1000 / resample_rate)
+    df_resampled = df_physiology.resample(f'{resample_interval}L').mean()
 
-    Args:
-        df_physiology (DataFrame): Physiology dataframe.
-        df_annotations (DataFrame): Annotations dataframe.
-        window_size (int, optional): The size of the sliding window. Defaults to 100.
-        step (int, optional): The step size between windows. Defaults to 5.
-        resample_factor (int, optional): The factor to resample the input data. Defaults to 10.
-
-    Returns:
-        tuple: Tuple containing X (features), y (labels), numeric_column_indices (indices of numeric features), and categorical_column_indices (indices of categorical features).
-    """
-    df_physiology.index = pd.to_datetime(df_physiology.index, unit='L')
-    # Resample the dataframe
-    df_resampled = df_physiology.resample(f'{resample_factor}L').mean()
-    arousal = df_annotations['arousal']
+    window_size = window_duration // resample_interval
+    step = step_duration // resample_interval
 
     aligned_numeric = sliding_window_with_step(df_resampled, window_size, step)
-    X = aligned_numeric
-    y = arousal[20:].values
+
+    X_windows = aligned_numeric[:len(df_annotations)]
+
+def preprocess(df_physiology, df_annotations, aggregate=None, window_duration=1000, step_duration=20, resample_rate=50):
+    """
+    Preprocesses the input data for further processing and modeling.
+    
+    Parameters:
+    ----------
+    df_physiology : pd.DataFrame
+        The input physiological data with columns: time, and physiological signals.
+    df_annotations : pd.DataFrame
+        The annotations DataFrame with columns: time and arousal.
+    aggregate : list of str, optional
+        The list of aggregation functions to apply on the input data.
+        Available options are: 'mean', 'std', 'enlarged', or any combination of these.
+        If None, it will return the 3D matrix as is.
+    window_duration : int, optional
+        The duration of the sliding window in milliseconds (default is 1000).
+    step_duration : int, optional
+        The step duration of the sliding window in milliseconds (default is 20).
+    resample_rate : int, optional
+        The resampling rate in Hz (default is 50).
+    
+    Returns:
+    -------
+    X : np.ndarray
+        The preprocessed input data (features) as a 2D array.
+    y : np.ndarray
+        The arousal values corresponding to each window.
+    numeric_column_indices : list of int
+        The indices of numeric columns in the input data.
+    categorical_column_indices : list of int
+        The indices of categorical columns in the input data.
+    """
+    df_physiology['time'] = pd.to_timedelta(df_physiology['time'], unit='ms')
+    df_physiology.set_index('time', inplace=True)
+
+    resample_interval = int(1000 / resample_rate)
+    df_resampled = df_physiology.resample(f'{resample_interval}L').mean()
+
+    window_size = window_duration // resample_interval
+    step = step_duration // resample_interval
+
+    aligned_numeric = sliding_window_with_step(df_resampled, window_size, step)
+
+    X_windows = aligned_numeric[:len(df_annotations)]
+
+
+    aggregate_local = aggregate.copy() if aggregate is not None else None
+
+    X = np.array([np.array(X_windows[:, :, i].tolist()) for i in range(X_windows.shape[2])]).T
+    X_aggregated = []
+
+    if aggregate_local is not None:
+        if "enlarged" in aggregate_local:
+            X_enlarged = np.array([np.array(X_windows[i].flatten().tolist()) for i in range(X_windows.shape[0])])
+            X_aggregated.append(X_enlarged)
+            aggregate_local.remove("enlarged")
+
+        agg_funcs = {
+            "mean": np.mean,
+            "std": np.std,
+            "max": np.max,
+            "min": np.min,
+            # Add more aggregation functions here
+        }
+
+        for agg in aggregate_local:
+            X_agg = np.apply_along_axis(agg_funcs[agg], axis=1, arr=X_windows)
+            X_aggregated.append(X_agg)
+
+        if X_aggregated:
+            X = np.concatenate(X_aggregated, axis=1)
+
+
+    y = df_annotations['arousal'].values
 
     numeric_column_indices = [i for i, col_dtype in enumerate(df_resampled.dtypes) if np.issubdtype(col_dtype, np.number)]
     categorical_column_indices = [i for i, col_dtype in enumerate(df_resampled.dtypes) if not np.issubdtype(col_dtype, np.number)]
 
     return X, y, numeric_column_indices, categorical_column_indices
+
+    y = df_annotations['arousal'].values
+
+    numeric_column_indices = [i for i, col_dtype in enumerate(df_resampled.dtypes) if np.issubdtype(col_dtype, np.number)]
+    categorical_column_indices = [i for i, col_dtype in enumerate(df_resampled.dtypes) if not np.issubdtype(col_dtype, np.number)]
+
+    return X, y, numeric_column_indices, categorical_column_indices
+
+
 
 def _fit_and_evaluate(train_index, test_index, X, y, pipeline):
     X_train, X_test = X[train_index], X[test_index]
