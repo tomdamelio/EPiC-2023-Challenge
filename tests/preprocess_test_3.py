@@ -2,16 +2,45 @@
 import os
 import pandas as pd
 import numpy as np
-import scipy
-import scipy.signal
-
-import neurokit2 as nk
 from pathlib import Path
+from scipy import interpolate, signal
+import neurokit2 as nk
+from biosppy.signals import ecg
+
+
+#%%
+#%%
+def load_train_data(sub, video, scenario):
+    # create file name based on parameters
+    file_name = f"sub_{sub}_vid_{video}.csv"
+
+    # load data files
+    train_physiology = pd.read_csv(Path(f"../data/raw/scenario_{scenario}/train/physiology", file_name), index_col="time")
+    train_annotations = pd.read_csv(Path(f"../data/raw/scenario_{scenario}/train/annotations", file_name), index_col="time")
+
+    return train_physiology, train_annotations
+
+sub = 1
+video = 1
+scenario = 1
+
+train_physiology, train_annotations = load_train_data(sub, video, scenario)
+
+#%%
+import biosppy
+import numpy as np  
+from hrvanalysis import remove_outliers
+from hrvanalysis import remove_ectopic_beats
+from hrvanalysis import interpolate_nan_values
+from matplotlib import pyplot as plt
+import scipy
+from scipy import interpolate
+from biosppy.signals import ecg
+
 
 def preprocess_physiology(data):
     index = data.index
 
-    # Preprocess ECG signal
     ecg_cleaned = nk.ecg_clean(data["ecg"])
     ecg_signals = pd.DataFrame({"ecg_cleaned": ecg_cleaned}, index=index)
 
@@ -61,35 +90,35 @@ def preprocess_physiology(data):
 
     return preprocessed_data
 
-def process_files_in_physiology(src_path, dst_path, test_mode=False):
-    processed_files = 0
-    outer_loop_break = False  # Add this flag variable to break the outer loop
-    for root, _, files in os.walk(src_path):
-        if os.path.basename(root) == "physiology":
-            for file in files:
-                if file.endswith(".csv"):
-                    file_path = os.path.join(root, file)
-                    data = pd.read_csv(file_path, index_col="time")
-                    preprocessed_data = preprocess_physiology(data)
-                    preprocessed_file_path = file_path.replace(src_path, dst_path)
-                    os.makedirs(os.path.dirname(preprocessed_file_path), exist_ok=True)
-                    preprocessed_data.to_csv(preprocessed_file_path, index=True)
-
-                    if test_mode:
-                        processed_files += 1
-                        if processed_files == 1:
-                            outer_loop_break = True  # Set the flag to True when you want to break the outer loop
-                            break
-            if outer_loop_break:  # Check the flag in the outer loop, and break if it's True
-                break
-
-source_dir = "../data/raw"
-destination_dir = "../data/preprocessed/cleaned"
-test_mode = True  # Set this to False if you want to run the script for all participants
-
-
-process_files_in_physiology(source_dir, destination_dir, test_mode)
+#%%
+data = preprocess_physiology(train_physiology)
 
 
 
-# %%
+#%%
+# Create a new figure
+fig, ax = plt.subplots(9, 1, figsize=(15, 20), sharex=True)
+
+# Plot all 8 physiological signals
+for idx, signal in enumerate(data.columns):
+    ax[idx].plot(data[signal], label=signal)
+    ax[idx].set_ylabel(signal)
+    ax[idx].legend()
+
+# Plot the annotations timeseries
+ax[8].plot(train_annotations, label="Annotations")
+ax[8].set_ylabel("Annotations")
+ax[8].legend()
+
+# Set the xlabel for the last subplot
+ax[8].set_xlabel("Time")
+
+# Show the plot
+plt.show()
+#%%
+
+# SEGUIR DESDE ACA ->
+# EDA: GENERAR EDA_phasic, EDA_tonic, y EDA_SMNA a partir de data[gsr]
+
+# Implementar obtencion de RR peak (medida continua) y HRV (variable continua) a partir de data de ECG
+# Obtener RRV de respiration rate (variabilidad de respiracion, como variable continua)
