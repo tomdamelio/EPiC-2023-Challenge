@@ -69,7 +69,7 @@ def zip_csv_files(folder_path_1, folder_path_2):
     return zipped_files
 
 
-def sliding_window_with_step(df, window_size, step):
+def sliding_window_with_step(df, window_size, step = 0):
     arr = df.values
     nrows = ((arr.shape[0] - window_size) // step) + 1
     n = arr.strides[0]

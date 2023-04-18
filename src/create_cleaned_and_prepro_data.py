@@ -1,3 +1,4 @@
+
 #%%
 import os
 import pandas as pd
@@ -288,7 +289,7 @@ def process_files_in_physiology(src_path, dst_path, test_mode=False):
 
 source_dir = "../data/raw"
 destination_dir = "../data/preprocessed/cleaned_and_prepro"
-test_mode = True  # Set this to False if you want to run the script for all participants
+test_mode = False  # Set this to False if you want to run the script for all participants
 
 
 process_files_in_physiology(source_dir, destination_dir, test_mode)
