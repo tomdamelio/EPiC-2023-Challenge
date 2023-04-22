@@ -20,8 +20,11 @@ def concat_csv_folder(clean_folder, raw_folder):
     for file in tqdm(subject_list):
         df_physio = pd.read_csv(clean_folder+file)
         df_annot = pd.read_csv(raw_folder+file)
-        df_merge = df_annot.merge(df_physio, how='left', on="time")
+        df_annot["time"] = df_annot["time"] + 10000
+        df_merge = df_annot.merge(df_physio, how='right', on="time")
+
         df = pd.concat([df, df_merge])
+    #df = df.fillna(method='ffill')
     return df
 
 df = concat_csv_folder(clean_folder, raw_folder)
@@ -45,10 +48,15 @@ test_df = (test_df - train_mean) / train_std
 
 #%%
 
+# input_width: Pasado
+# label_width: Prediccion
+# shift: "Futuro"
+
 class WindowGenerator():
   def __init__(self, input_width, label_width, shift,
                train_df=train_df, val_df=val_df, test_df=test_df,
                label_columns=None):
+      
     # Store the raw data.
     self.train_df = train_df
     self.val_df = val_df
@@ -109,39 +117,39 @@ WindowGenerator.split_window = split_window
 #%%
 
 
-def plot(self, model=None, plot_col='T (degC)', max_subplots=3):
-  inputs, labels = self.example
-  plt.figure(figsize=(12, 8))
-  plot_col_index = self.column_indices[plot_col]
-  max_n = min(max_subplots, len(inputs))
-  for n in range(max_n):
-    plt.subplot(max_n, 1, n+1)
-    plt.ylabel(f'{plot_col} [normed]')
-    plt.plot(self.input_indices, inputs[n, :, plot_col_index],
-             label='Inputs', marker='.', zorder=-10)
+# def plot(self, model=None, plot_col='T (degC)', max_subplots=3):
+#   inputs, labels = self.example
+#   plt.figure(figsize=(12, 8))
+#   plot_col_index = self.column_indices[plot_col]
+#   max_n = min(max_subplots, len(inputs))
+#   for n in range(max_n):
+#     plt.subplot(max_n, 1, n+1)
+#     plt.ylabel(f'{plot_col} [normed]')
+#     plt.plot(self.input_indices, inputs[n, :, plot_col_index],
+#              label='Inputs', marker='.', zorder=-10)
 
-    if self.label_columns:
-      label_col_index = self.label_columns_indices.get(plot_col, None)
-    else:
-      label_col_index = plot_col_index
+#     if self.label_columns:
+#       label_col_index = self.label_columns_indices.get(plot_col, None)
+#     else:
+#       label_col_index = plot_col_index
 
-    if label_col_index is None:
-      continue
+#     if label_col_index is None:
+#       continue
 
-    plt.scatter(self.label_indices, labels[n, :, label_col_index],
-                edgecolors='k', label='Labels', c='#2ca02c', s=64)
-    if model is not None:
-      predictions = model(inputs)
-      plt.scatter(self.label_indices, predictions[n, :, label_col_index],
-                  marker='X', edgecolors='k', label='Predictions',
-                  c='#ff7f0e', s=64)
+#     plt.scatter(self.label_indices, labels[n, :, label_col_index],
+#                 edgecolors='k', label='Labels', c='#2ca02c', s=64)
+#     if model is not None:
+#       predictions = model(inputs)
+#       plt.scatter(self.label_indices, predictions[n, :, label_col_index],
+#                   marker='X', edgecolors='k', label='Predictions',
+#                   c='#ff7f0e', s=64)
 
-    if n == 0:
-      plt.legend()
+#     if n == 0:
+#       plt.legend()
 
-  plt.xlabel('Time [h]')
+#   plt.xlabel('Time [h]')
 
-WindowGenerator.plot = plot
+# WindowGenerator.plot = plot
 
 
 #%%
@@ -184,18 +192,19 @@ WindowGenerator.test = test
 
 #%%
 
-MAX_EPOCHS = 20
+MAX_EPOCHS = 500
 val_performance = {}
 performance = {}
 
-def compile_and_fit(model, window, patience=2):
+def compile_and_fit(model, window, patience=10):
   early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
                                                     patience=patience,
-                                                    mode='min')
+                                                    mode='min',
+                                                    restore_best_weights=True)
 
   model.compile(loss=tf.keras.losses.MeanSquaredError(),
                 optimizer=tf.keras.optimizers.Adam(),
-                metrics=[tf.keras.metrics.MeanAbsoluteError()])
+                metrics=[tf.keras.metrics.RootMeanSquaredError()])
 
   history = model.fit(window.train, epochs=MAX_EPOCHS,
                       validation_data=window.val,
@@ -204,8 +213,12 @@ def compile_and_fit(model, window, patience=2):
 
 #%%
 
+# input_width: Pasado
+# label_width: Predicciones
+# shift: Futuro
+
 wide_window = WindowGenerator(
-    input_width=24, label_width=24, shift=1,
+    input_width=50, label_width=1, shift=1,
     label_columns=["valence", "arousal"])
 
 
@@ -215,6 +228,10 @@ wide_window = WindowGenerator(
 lstm_model = tf.keras.models.Sequential([
     # Shape [batch, time, features] => [batch, time, lstm_units]
     tf.keras.layers.LSTM(32, return_sequences=True),
+    
+    tf.keras.layers.Dense(units=64, activation='relu'),
+    tf.keras.layers.Dense(units=64, activation='relu'),
+    
     # Shape => [batch, time, features]
     tf.keras.layers.Dense(units=2)
 ])
@@ -227,29 +244,29 @@ performance['LSTM'] = lstm_model.evaluate( wide_window.test, verbose=0)
 
 #%%
 
-class ResidualWrapper(tf.keras.Model):
-  def __init__(self, model):
-    super().__init__()
-    self.model = model
+# class ResidualWrapper(tf.keras.Model):
+#   def __init__(self, model):
+#     super().__init__()
+#     self.model = model
 
-  def call(self, inputs, *args, **kwargs):
-    delta = self.model(inputs, *args, **kwargs)
+#   def call(self, inputs, *args, **kwargs):
+#     delta = self.model(inputs, *args, **kwargs)
 
-    # The prediction for each time step is the input
-    # from the previous time step plus the delta
-    # calculated by the model.
-    return inputs + delta
+#     # The prediction for each time step is the input
+#     # from the previous time step plus the delta
+#     # calculated by the model.
+#     return inputs + delta
     
-residual_lstm = ResidualWrapper(
-    tf.keras.Sequential([
-    tf.keras.layers.LSTM(32, return_sequences=True),
-    tf.keras.layers.Dense(units=2,
-        # The predicted deltas should start small.
-        # Therefore, initialize the output layer with zeros.
-        kernel_initializer=tf.initializers.zeros())
-]))
+# residual_lstm = ResidualWrapper(
+#     tf.keras.Sequential([
+#     tf.keras.layers.LSTM(32, return_sequences=True),
+#     tf.keras.layers.Dense(units=2,
+#         # The predicted deltas should start small.
+#         # Therefore, initialize the output layer with zeros.
+#         kernel_initializer=tf.initializers.zeros())
+# ]))
 
-history = compile_and_fit(residual_lstm, wide_window)
+# history = compile_and_fit(residual_lstm, wide_window)
 
-val_performance['Residual LSTM'] = residual_lstm.evaluate(wide_window.val)
-performance['Residual LSTM'] = residual_lstm.evaluate(wide_window.test, verbose=0)
+# val_performance['Residual LSTM'] = residual_lstm.evaluate(wide_window.val)
+# performance['Residual LSTM'] = residual_lstm.evaluate(wide_window.test, verbose=0)
