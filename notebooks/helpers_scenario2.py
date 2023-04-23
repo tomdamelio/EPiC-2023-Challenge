@@ -267,5 +267,8 @@ def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, 
 
     # Calculate the average RMSE for each output separately
     average_rmse_per_output = np.mean(rmse_values_per_output, axis=0)
-    print("Average Root Mean Squared Error per output:", average_rmse_per_output)
+    
+    model_name = model.__name__
+
+    print(f"Testing model: {model_name}. Average Root Mean Squared Error per output: {average_rmse_per_output}. ")
     return average_rmse_per_output

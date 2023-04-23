@@ -28,6 +28,7 @@ def concat_csv_folder(clean_folder, raw_folder):
     return df
 
 df = concat_csv_folder(clean_folder, raw_folder)
+df = df.dropna()
 
 #%%
 column_indices = {name: i for i, name in enumerate(df.columns)}
