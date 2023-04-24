@@ -1,0 +1,241 @@
+model,hyperparameters,aggregate,average_rmse
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'sqrt'}",['min'],0.05065504680904718
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'auto'}",['min'],0.10221168466871333
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.5}",['mean'],0.19840109648129234
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}",['max'],0.3969271891757421
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['max'],0.5227592254300829
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}","['std', 'max']",1.0912007740445324
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['enlarged'],0.10954998369418652
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'sqrt'}",['mean'],0.35432376619211625
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'sqrt'}",['enlarged'],0.14153702784079644
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'auto'}","['max', 'min']",0.027422628649521386
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['mean'],0.09478199904150612
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['mean'],0.1753463620355648
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['max'],0.29865097284919667
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['min'],1.5789684498666372
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['enlarged'],0.28213433227410173
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}",['min'],0.08148421009068725
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['min'],0.30215154619923534
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['enlarged'],0.12166647949404179
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['min'],0.21025053030314494
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['enlarged'],0.7604372715758326
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'auto'}",['min'],0.24199730067986341
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}",['max'],1.0548391751489898
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['mean'],0.059675649867934985
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.01, 'subsample': 0.5}",['mean'],0.48157892813984066
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['enlarged'],0.008423076728508684
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}","['max', 'min']",0.2750031588016894
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'auto'}","['std', 'min']",0.06045926325250241
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'sqrt'}",['max'],0.4573944847792798
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['max'],0.11454668972256914
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}","['max', 'min']",0.7795625543716553
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['enlarged'],0.20570798298000334
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['mean'],0.2125849555085649
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['enlarged'],0.17094507752078741
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.01, 'subsample': 0.8}",['enlarged'],0.42748646916864513
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['mean'],0.22200013307369565
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['mean'],0.1824673173211347
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['enlarged'],0.2399756162886621
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['max'],0.5822297877417848
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['max'],0.27697027592243123
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['enlarged'],0.2715067418674732
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}","['mean', 'std']",0.06520403662648316
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}","['max', 'min']",0.1465156595208474
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['std'],0.053332685849837524
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'sqrt'}","['max', 'min']",0.2794813540738713
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'sqrt'}","['mean', 'std', 'max', 'min']",0.14822024198792216
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}",['mean'],1.064598477678452
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['min'],0.20010400924110772
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}","['max', 'min']",0.34502347100858827
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'auto'}",['max'],0.22452688857880848
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['min'],0.21447494497131875
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'auto'}",['max'],0.2364750509869153
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}","['std', 'max']",0.3333622358194645
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['enlarged'],0.2919369621551552
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}","['max', 'min']",0.9030267823084006
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['mean'],0.23482768418642438
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}","['mean', 'std']",0.17568265317669654
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['min'],0.08210009951951949
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.5}",['mean'],0.38883597994140723
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'auto'}","['max', 'min']",0.4117114472720559
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['enlarged'],0.321338393017816
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['enlarged'],0.1206457831732048
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'sqrt'}",['min'],0.8560163302926688
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}",['max'],0.14918802828694785
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['min'],0.15473513560974367
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.5}",['max'],0.1010947745535649
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'sqrt'}","['max', 'min']",0.27217285969149596
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['max'],0.10017513279918426
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}","['mean', 'std', 'max', 'min']",0.11853217839428498
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'sqrt'}","['std', 'max']",0.23701935374008087
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'sqrt'}",['enlarged'],0.4907327761738406
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}",['max'],0.2618117605848821
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.5}",['max'],0.1359692134278879
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['min'],0.17102714727544482
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}","['std', 'min']",0.3313806899870463
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['enlarged'],0.1742464752668214
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'sqrt'}",['mean'],0.05715881429717836
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['max'],0.32895995426107655
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}","['mean', 'std']",1.1513044723899792
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['min'],0.020512461342859212
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['enlarged'],0.0
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}",['min'],0.01757251536173688
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['enlarged'],0.0
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}","['mean', 'max']",0.02426403040388859
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}","['mean', 'std']",0.23903981347318987
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['enlarged'],0.10040072315919576
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'auto'}",['max'],1.0618083560560454
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['enlarged'],0.0
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['max'],0.024358549904980712
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['max'],0.28948830460951686
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['min'],0.1756198363871891
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['enlarged'],0.1291550393648275
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}",['min'],0.6868032866409879
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['min'],0.2099989572454029
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['min'],0.7815898182133378
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}",['mean'],0.37947020844840273
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}","['mean', 'min']",0.04063809419178209
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['mean'],0.3254901035195451
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'sqrt'}","['max', 'min']",0.015322375316408548
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'auto'}","['mean', 'std', 'max', 'min']",0.2462155696637077
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['min'],0.25063401569464194
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'sqrt'}","['std', 'min']",0.20302429600403143
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'auto'}","['max', 'min']",0.8115322004592752
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'auto'}",['std'],0.19018827515804598
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['max'],0.04248910943020822
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'sqrt'}",['enlarged'],0.24220324322434364
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'auto'}","['mean', 'min']",0.073078249251588
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'auto'}",['max'],0.20854482917262543
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}",['enlarged'],0.25774103259286857
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['min'],0.23768582246167927
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'sqrt'}","['max', 'min']",0.8384522328389945
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'sqrt'}",['min'],8.355622566608633e-15
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['max'],0.14099830990012158
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'auto'}","['std', 'max']",0.06275785958011999
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.5}",['max'],0.3581521961212809
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}","['max', 'min']",0.22619099771979187
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'sqrt'}",['min'],0.28289350778089073
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.5}",['enlarged'],0.024397943932293303
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}",['max'],0.7920744571083189
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'auto'}","['max', 'min']",0.22161927892857106
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['max'],0.18137352560545297
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'sqrt'}",['std'],0.17124266581562023
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'sqrt'}",['max'],0.2676929020460558
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['max'],0.21346033713516605
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['max'],0.2730164778848002
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'sqrt'}",['min'],0.42925701564629665
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'sqrt'}",['max'],1.9691150047850805
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'sqrt'}",['min'],0.4336669436649768
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['max'],0.3494587049401428
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}","['max', 'min']",0.3886664810128544
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['min'],0.5947735586837414
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['mean'],0.13224811119319813
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}",['enlarged'],0.3284636794407789
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}",['min'],0.1874249530845637
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'sqrt'}","['max', 'min']",1.4719586055577942
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}",['max'],0.5329330295413798
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['max'],0.5250788701708172
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'auto'}",['enlarged'],0.19855337990522534
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['max'],0.6572210979077809
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}","['mean', 'std']",0.06532409668533455
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['min'],0.0718066547990546
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}",['min'],0.1321419318047896
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['min'],0.48527686750600846
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['enlarged'],0.0
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}","['max', 'min']",0.3376498341276493
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'sqrt'}","['mean', 'min']",0.09097129443058631
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['enlarged'],0.34173561190096374
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['enlarged'],0.2610335591339911
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['min'],0.4260904582319339
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'sqrt'}","['max', 'min']",0.2964366657090134
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['max'],1.1189863437324965
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['mean'],0.40009360721257525
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}",['max'],0.45557315726839887
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'sqrt'}","['max', 'min']",0.09412047824966052
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'auto'}",['max'],0.2066832002311104
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['std'],0.06299082577284136
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}","['mean', 'std', 'max', 'min']",0.5479300685752309
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.5}",['mean'],0.05647228524794249
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['min'],0.3115739459860064
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['mean'],0.0485284870078521
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.5}",['max'],0.12000166617666821
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'sqrt'}",['enlarged'],0.030059527396178332
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['std'],0.4963767290717356
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['mean'],0.14616496028513545
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['max'],0.031458025311016845
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}",['enlarged'],0.078396090880384
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['std'],1.2961005339000118
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}","['max', 'min']",0.06315536127926062
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}","['max', 'min']",0.0
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['max'],0.09566229850530512
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}","['max', 'min']",0.39498692285457726
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.5}",['max'],0.3443332951148257
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['min'],0.3953723037485032
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['min'],0.14457146156390294
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}",['enlarged'],0.9870473012425329
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['min'],0.34781832100227017
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['max'],0.19534966062495684
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}","['mean', 'max']",0.04572875678820672
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['enlarged'],0.14979361357196033
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['min'],0.09729767151535604
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['enlarged'],0.0
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'auto'}","['mean', 'max']",0.07728383792978681
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['min'],0.3109761283057795
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}","['mean', 'std', 'max', 'min']",0.01486528400009684
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['enlarged'],0.0
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'sqrt'}","['mean', 'std', 'max', 'min']",0.026180706105115064
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.5}",['enlarged'],0.02047753614924075
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['mean'],0.12175584212572492
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['max'],0.4641517864962282
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'sqrt'}","['mean', 'min']",0.11210505600035651
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['max'],0.795084963672682
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['enlarged'],0.3140085658043208
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['enlarged'],0.1640698399847585
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}","['std', 'max']",0.020215238218947613
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}","['max', 'min']",0.2718384573571704
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['min'],0.07703440378165421
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}",['min'],0.3140719059725688
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['max'],0.10074209543380719
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['enlarged'],0.43254903996965766
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}","['mean', 'min']",0.0926269252187187
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['max'],0.23114748999251683
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['max'],0.889370516923081
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['min'],0.33097497344540716
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['enlarged'],0.022973449799270212
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['min'],0.22234289221010223
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['min'],0.135232676201489
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.5}",['mean'],0.6103946026250258
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.5}",['enlarged'],0.06401721348617473
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['max'],0.20067566541337395
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['mean'],0.2123419910161901
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'sqrt'}",['mean'],0.42040149585237685
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['enlarged'],0.16188197832658835
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}",['max'],0.368586280821421
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.5}",['min'],0.1896523897755495
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}","['max', 'min']",0.3262195315922692
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}",['max'],0.21561825679855282
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}",['max'],0.2969231637123283
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.5}",['max'],0.11384474101459671
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'sqrt'}","['max', 'min']",0.5842186924784961
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['enlarged'],0.5422898503716533
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['max'],0.45890667819084385
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['min'],0.4806933102408141
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'sqrt'}",['std'],2.383791216061551
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['min'],0.22005582343282573
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['min'],0.5039456467644232
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'sqrt'}",['max'],0.03600314545804937
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}",['max'],0.0047500768068693125
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['max'],0.19869835718629728
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'auto'}",['min'],0.4019788377242174
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'sqrt'}",['max'],0.3566966094956686
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}",['max'],0.4231183060643823
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.5}",['min'],0.15682624772667403
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}",['min'],0.2663656049211264
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['enlarged'],0.32753976045364425
+RandomForestRegressor,"{'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}",['min'],0.08003988088215935
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': 10, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}","['std', 'max']",0.9005140256692407
+RandomForestRegressor,"{'n_estimators': 50, 'max_depth': None, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'auto'}",['min'],0.18981833996920067
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['enlarged'],0.30716162040089456
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.8}",['max'],1.014588523857586
+XGBRegressor,"{'n_estimators': 100, 'max_depth': 10, 'learning_rate': 0.1, 'subsample': 0.5}",['mean'],0.2570752885402566
+XGBRegressor,"{'n_estimators': 50, 'max_depth': 6, 'learning_rate': 0.1, 'subsample': 0.8}",['max'],0.3032119571592653
