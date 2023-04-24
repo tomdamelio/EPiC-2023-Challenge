@@ -24,7 +24,7 @@ env/
 
 # Data
 #data/
-*.csv
+# *.csv
 *.tsv
 *.xlsx
 *.hdf5
