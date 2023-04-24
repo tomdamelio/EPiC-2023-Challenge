@@ -130,11 +130,11 @@ def preprocess(df_phys, df_annotations,split, predictions_cols  = 'arousal', agg
     resample_interval = int(1000 / resample_rate)
     
     df_physiology_train = df_phys.query("subject in @train")#.reset_index()
-    df_physiology_train = df_physiology_train.resample(f'{resample_interval}L').mean()#
+    # df_physiology_train = df_physiology_train.resample(f'{resample_interval}L').mean()#
     df_annotations_train = df_annotations.query("subject in @train")
     
     df_physiology_test = df_phys.query("subject in @test")#.reset_index()
-    df_physiology_test = df_physiology_test.resample(f'{resample_interval}L').mean()#.reset_index()
+    # df_physiology_test = df_physiology_test.resample(f'{resample_interval}L').mean()#.reset_index()
     df_annotations_test = df_annotations.query("subject in @test")
 
 
@@ -150,8 +150,9 @@ def preprocess(df_phys, df_annotations,split, predictions_cols  = 'arousal', agg
     
     aggregate_local = aggregate.copy() if aggregate is not None else None
 
-    X_train = np.array([np.array(X_windows_train[:, :, i].tolist()) for i in range(X_windows_train.shape[2])]).T
-    X_test = np.array([np.array(X_windows_test[:, :, i].tolist()) for i in range(X_windows_test.shape[2])]).T
+    X_train = np.array([np.array(X_windows_train[:, :, i].tolist()) for i in range(X_windows_train.shape[2])])
+    X_test = np.array([np.array(X_windows_test[:, :, i].tolist()) for i in range(X_windows_test.shape[2])])
+
     
     X_train_aggregated = []
     X_test_aggregated = []
