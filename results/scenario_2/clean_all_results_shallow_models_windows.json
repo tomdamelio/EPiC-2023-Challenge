@@ -1,0 +1,76 @@
+{
+    "10": [
+        {
+            "model": "XGBRegressor",
+            "hyperparameters": {
+                "n_estimators": 50,
+                "max_depth": 6,
+                "learning_rate": 0.01,
+                "subsample": 0.8
+            },
+            "aggregate": [
+                "mean",
+                "std",
+                "max",
+                "min"
+            ],
+            "average_rmse_arousal": 2.4040314819786555,
+            "average_rmse_valence": 3.3291505749528176,
+            "window": 10000
+        },
+        {
+            "model": "XGBRegressor",
+            "hyperparameters": {
+                "n_estimators": 50,
+                "max_depth": 6,
+                "learning_rate": 0.1,
+                "subsample": 0.5
+            },
+            "aggregate": [
+                "mean",
+                "std",
+                "max",
+                "min"
+            ],
+            "average_rmse_arousal": 0.9351077261949007,
+            "average_rmse_valence": 1.888367268284636,
+            "window": 10000
+        },
+        {
+            "model": "XGBRegressor",
+            "hyperparameters": {
+                "n_estimators": 50,
+                "max_depth": 6,
+                "learning_rate": 0.1,
+                "subsample": 0.8
+            },
+            "aggregate": [
+                "mean",
+                "std",
+                "max",
+                "min"
+            ],
+            "average_rmse_arousal": 0.9244386607430314,
+            "average_rmse_valence": 1.8580352841163308,
+            "window": 10000
+        },
+        {
+            "model": "XGBRegressor",
+            "hyperparameters": {
+                "n_estimators": 50,
+                "max_depth": 6,
+                "learning_rate": 0.01,
+                "subsample": 0.5
+            },
+            "aggregate": [
+                "mean",
+                "std",
+                "max",
+                "min"
+            ],
+            "average_rmse_arousal": 2.4094317069845848,
+            "average_rmse_valence": 3.355491126410745,
+            "window": 10000
+        }
+    ]
+}
