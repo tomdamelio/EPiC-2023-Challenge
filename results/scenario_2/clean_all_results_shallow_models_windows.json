@@ -1,12 +1,11 @@
 {
-    "10": [
+    "0": [
         {
-            "model": "XGBRegressor",
+            "model": "KNeighborsRegressor",
             "hyperparameters": {
-                "n_estimators": 50,
-                "max_depth": 6,
-                "learning_rate": 0.01,
-                "subsample": 0.8
+                "n_neighbors": 5,
+                "weights": "distance",
+                "algorithm": "auto"
             },
             "aggregate": [
                 "mean",
@@ -14,17 +13,16 @@
                 "max",
                 "min"
             ],
-            "average_rmse_arousal": 2.4040314819786555,
-            "average_rmse_valence": 3.3291505749528176,
-            "window": 10000
+            "average_rmse_arousal": 2.1337753170946536,
+            "average_rmse_valence": 2.4278192565047627,
+            "window": 500
         },
         {
-            "model": "XGBRegressor",
+            "model": "KNeighborsRegressor",
             "hyperparameters": {
-                "n_estimators": 50,
-                "max_depth": 6,
-                "learning_rate": 0.1,
-                "subsample": 0.5
+                "n_neighbors": 5,
+                "weights": "uniform",
+                "algorithm": "auto"
             },
             "aggregate": [
                 "mean",
@@ -32,17 +30,16 @@
                 "max",
                 "min"
             ],
-            "average_rmse_arousal": 0.9351077261949007,
-            "average_rmse_valence": 1.888367268284636,
-            "window": 10000
+            "average_rmse_arousal": 2.1337751024978835,
+            "average_rmse_valence": 2.427818847164962,
+            "window": 500
         },
         {
-            "model": "XGBRegressor",
+            "model": "KNeighborsRegressor",
             "hyperparameters": {
-                "n_estimators": 50,
-                "max_depth": 6,
-                "learning_rate": 0.1,
-                "subsample": 0.8
+                "n_neighbors": 8,
+                "weights": "distance",
+                "algorithm": "auto"
             },
             "aggregate": [
                 "mean",
@@ -50,101 +47,9 @@
                 "max",
                 "min"
             ],
-            "average_rmse_arousal": 0.9244386607430314,
-            "average_rmse_valence": 1.8580352841163308,
-            "window": 10000
-        },
-        {
-            "model": "XGBRegressor",
-            "hyperparameters": {
-                "n_estimators": 50,
-                "max_depth": 6,
-                "learning_rate": 0.01,
-                "subsample": 0.5
-            },
-            "aggregate": [
-                "mean",
-                "std",
-                "max",
-                "min"
-            ],
-            "average_rmse_arousal": 2.4094317069845848,
-            "average_rmse_valence": 3.355491126410745,
-            "window": 10000
-        }
-    ],
-    "11": [
-        {
-            "model": "XGBRegressor",
-            "hyperparameters": {
-                "n_estimators": 50,
-                "max_depth": 6,
-                "learning_rate": 0.1,
-                "subsample": 0.5
-            },
-            "aggregate": [
-                "mean",
-                "std",
-                "max",
-                "min"
-            ],
-            "average_rmse_arousal": 1.0267856387008039,
-            "average_rmse_valence": 1.001899744010533,
-            "window": 10000
-        },
-        {
-            "model": "XGBRegressor",
-            "hyperparameters": {
-                "n_estimators": 50,
-                "max_depth": 6,
-                "learning_rate": 0.1,
-                "subsample": 0.8
-            },
-            "aggregate": [
-                "mean",
-                "std",
-                "max",
-                "min"
-            ],
-            "average_rmse_arousal": 1.0232068957079479,
-            "average_rmse_valence": 1.0262945462743087,
-            "window": 10000
-        },
-        {
-            "model": "XGBRegressor",
-            "hyperparameters": {
-                "n_estimators": 50,
-                "max_depth": 6,
-                "learning_rate": 0.01,
-                "subsample": 0.8
-            },
-            "aggregate": [
-                "mean",
-                "std",
-                "max",
-                "min"
-            ],
-            "average_rmse_arousal": 2.3931862016095313,
-            "average_rmse_valence": 2.8589952890635146,
-            "window": 10000
-        },
-        {
-            "model": "XGBRegressor",
-            "hyperparameters": {
-                "n_estimators": 50,
-                "max_depth": 6,
-                "learning_rate": 0.01,
-                "subsample": 0.5
-            },
-            "aggregate": [
-                "mean",
-                "std",
-                "max",
-                "min"
-            ],
-            "average_rmse_arousal": 2.438840722107335,
-            "average_rmse_valence": 2.872123489971012,
-            "window": 10000
+            "average_rmse_arousal": 2.1286638396857813,
+            "average_rmse_valence": 2.4234061897837806,
+            "window": 500
         }
     ]
 }

@@ -19,6 +19,7 @@ from matplotlib import pyplot as plt
 from biosppy.signals import ecg
 import cvxopt as cv
 import cvxopt.solvers
+from joblib import Parallel, delayed
 
 
 
@@ -211,14 +212,16 @@ def preprocess_physiology(data):
         cvx_aux = np.vstack((phasic_gsr, p, tonic_gsr))
         cvx = np.hstack((cvx, cvx_aux))
 
-    gsr_phasic = cvx[0]
-    gsr_smna = cvx[1]
-    gsr_tonic = cvx[2]
+    eda_phasic = cvx[0]
+    eda_smna = cvx[1]
+    eda_tonic = cvx[2]
 
     # Guarda la actividad del nervio sudomotor en gsr_SMNA
-    #gsr_SMNA = eda_smna
+    gsr_SMNA = eda_smna
+    gsr_phasic = eda_phasic
+    gsr_tonic = eda_tonic
 
-    # Agrega gsr a la variable data
+    # Agrega gsr_SMNA a la variable data
     gsr_SMNA = pd.DataFrame(gsr_SMNA, columns=["gsr_SMNA"], index=index)
     gsr_phasic = pd.DataFrame(gsr_phasic, columns=["gsr_phasic"], index=index)
     gsr_tonic = pd.DataFrame(gsr_tonic, columns=["gsr_tonic"], index=index)
@@ -256,9 +259,9 @@ def preprocess_physiology(data):
                                     rr_signals,
                                     bvp_signals,
                                     gsr_signals,
-                                    gsr_SMNA,
-                                    gsr_phasic,
                                     gsr_tonic,
+                                    gsr_phasic,
+                                    gsr_SMNA,
                                     rsp_signals,
                                     rsp_rate_df,
                                     emg_zygo_signals,
@@ -267,36 +270,36 @@ def preprocess_physiology(data):
                                     skt_signals], axis=1)
 
     return preprocessed_data
+#%%
 
 def process_files_in_physiology(src_path, dst_path, test_mode=False):
     processed_files = 0
-    allowed_scenarios = ['scenario_3', 'scenario_4']  # Add this line to specify the allowed scenarios
     outer_loop_break = False  # Add this flag variable to break the outer loop
     for root, _, files in os.walk(src_path):
-        if os.path.basename(root) not in allowed_scenarios:  # Add this condition to check if the current scenario is allowed
-            continue  # If the current scenario is not allowed, skip to the next iteration
-        if outer_loop_break or (test_mode and processed_files >= 1):
-            break
-        for file in files:
-            if file.endswith(".pkl"):
-                print(f"Processing file: {file}")
-                file_path = os.path.join(root, file)
-                data = pd.read_pickle(file_path)
-                preprocessed_data = preprocess_physiology(data)
-                preprocessed_file_path = os.path.join(dst_path, file)
-                preprocessed_data.to_pickle(preprocessed_file_path)
-                processed_files += 1
-                if test_mode and processed_files >= 1:
-                    outer_loop_break = True  # Set the flag variable to True to break the outer loop
+        if os.path.basename(root) == "physiology":
+            if ("scenario_3" or "scenario_4") in os.path.dirname(root): 
+                for file in files:
+                    if file.endswith(".csv"):
+                        file_path = os.path.join(root, file)
+                        data = pd.read_csv(file_path, index_col="time")
+                        preprocessed_data = preprocess_physiology(data)
+                        preprocessed_file_path = file_path.replace(src_path, dst_path)
+                        os.makedirs(os.path.dirname(preprocessed_file_path), exist_ok=True)
+                        preprocessed_data.to_csv(preprocessed_file_path, index=True)
+
+                        if test_mode:
+                            processed_files += 1
+                            if processed_files == 1:
+                                outer_loop_break = True  # Set the flag to True when you want to break the outer loop
+                                break
+                if outer_loop_break:  # Check the flag in the outer loop, and break if it's True
                     break
 
 source_dir = "../data/raw"
 destination_dir = "../data/preprocessed/cleaned_and_prepro"
-test_mode = True  # Set this to False if you want to run the script for all participants
+test_mode = False  # Set this to False if you want to run the script for all participants
 
 
 process_files_in_physiology(source_dir, destination_dir, test_mode)
-
-
 
 # %%
