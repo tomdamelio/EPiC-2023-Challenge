@@ -11,13 +11,15 @@ from scipy.signal import resample
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
+from sklearn.compose import make_column_selector
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.metrics import mean_squared_error
 from joblib import Parallel, delayed
 
-
+from sklearn.ensemble import RandomForestRegressor
+from xgboost import XGBRegressor
 
 #%%
 def zip_csv_train_test_files(folder_phys_train, folder_ann_train, folder_phys_test, folder_ann_test):
@@ -141,7 +143,7 @@ def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', agg
     return X, y, numeric_column_indices, categorical_column_indices
 
 
-def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, y_test, model, hyperparameters, numeric_column_indices=None, categorical_column_indices=None):
+def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, y_test, model, numeric_column_indices=None, categorical_column_indices=None):
     """
     Perform time series cross-validation with hyperparameters for a given model.
 
@@ -174,10 +176,10 @@ def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, 
     ])
 
     # Check if y has multiple outputs
-    multi_output = y.ndim > 1 and y.shape[1] > 1
+    multi_output = y_train.ndim > 1 and y_train.shape[1] > 1
 
     # Wrap the model in a MultiOutputRegressor if needed
-    model_instance = model(**hyperparameters)
+    model_instance = model
     if multi_output:
         model_instance = MultiOutputRegressor(model_instance)
 
@@ -185,14 +187,12 @@ def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, 
         ('preprocessor', preprocessor),
         ('model', model_instance)
     ])
-
-
     
     pipeline.fit(X_train, y_train)
     y_pred = pipeline.predict(X_test)
 
     # Calculate RMSE for each output separately
-    rmse_per_output = mean_squared_error(y_test, y_pred, squared=False, multioutput='raw_values')
+    # rmse_per_output = mean_squared_error(y_test, y_pred, squared=False, multioutput='raw_values')
 
     return y_pred, rmse_per_output
 
@@ -208,47 +208,17 @@ zipped_dict = zip_csv_train_test_files(path_phys_train, path_ann_train, path_phy
 
 # %%
 # Define aggregate metric combinations
-aggregate_combinations = [
-    # ['enlarged'],
-    # ['mean'],
-    # ['std'],
-    # ['max'],
-    ['min'],
-    # ['mean', 'std'],
-    # ['mean', 'max'],
-    # ['mean', 'min'],
-    # ['std', 'max'],
-    # ['std', 'min'],
-    # ['max', 'min'],
-    ['mean', 'std', 'max', 'min']
-]
+aggregate_combination = ['mean', 'max', 'min']
 
 # Define models and hyperparameters
-models_hyperparameters = [
-    # (LinearRegression, {}),
-    # (SVR, {
-    #     'kernel': ['linear', 'rbf'],
-    #     'C': [0.1, 1, 10],
-    #     'epsilon': [0.1, 1],
-    #     'gamma': ['scale', 'auto'],  # Only used for 'rbf' kernel
-    # }),
-    (RandomForestRegressor, {
-        'n_estimators': [50, 100],
-        'max_depth': [10, None],
-        'min_samples_split': [2, 5],
-        # 'min_samples_leaf': [1, 2],
-        # 'max_features': ['auto', 'sqrt'],
-    }),
-    (XGBRegressor, {
-        'n_estimators': [50, 100],
-        'max_depth': [6, 10],
-    #     'learning_rate': [0.01, 0.1],
-    #     'subsample': [0.5, 0.8],
-        # 'colsample_bytree': [0.5, 0.8],
-        # 'reg_alpha': [0, 0.1],
-        # 'reg_lambda': [0.1, 1],
-    }),
-]
+model= (RandomForestRegressor, {
+        'n_estimators': 50,#[50, 100],
+        'max_depth': 10,#[10, None],
+        'min_samples_split': 2,#[2, 5],
+        'min_samples_leaf': 1,
+        'max_features': 'auto',
+    })
+
 # %%
 for i in range(len(zipped_dict['train'])):
     df_phys_train = pd.read_csv(zipped_dict['train'][i][0])
@@ -257,10 +227,14 @@ for i in range(len(zipped_dict['train'])):
     df_phys_test = pd.read_csv(zipped_dict['test'][i][0])
     df_ann_test = pd.read_csv(zipped_dict['test'][i][1])
     
-    X_train, y_train, numeric_column_indices, categorical_column_indices =  preprocess(df_phys_train, df_ann_train, predictions_cols  = ['arousal', 'valence'], aggregate=None, window_duration=1000)
-    X_test, y_test, numeric_column_indices, categorical_column_indices =  preprocess(df_phys_test, df_ann_test, predictions_cols  = ['arousal', 'valence'], aggregate=None, window_duration=1000)
+    X_train, y_train, numeric_column_indices, categorical_column_indices =  preprocess(df_phys_train, df_ann_train, predictions_cols  = ['arousal', 'valence'], aggregate=aggregate_combination, window_duration=1000)
+    X_test, y_test, numeric_column_indices, categorical_column_indices =  preprocess(df_phys_test, df_ann_test, predictions_cols  = ['arousal', 'valence'], aggregate=aggregate_combination, window_duration=1000)
     
-    y_pred, rmse_per_output = time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, y_test, model, hyperparameters, numeric_column_indices=None, categorical_column_indices=None)
+
+    # y_pred, rmse_per_output = time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, y_test, model, numeric_column_indices=None, categorical_column_indices=None)
     
     
+# %%
+y_pred, rmse_per_output = time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, y_test, model, numeric_column_indices=numeric_column_indices, categorical_column_indices=categorical_column_indices)
+
 # %%
