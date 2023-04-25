@@ -63,7 +63,7 @@ def split_subjects_train_test(subjects, splits):
         random.shuffle(list_in)
         return [list_in[i::n] for i in range(n)]
     
-    partitions  = partition(subjects, 3)
+    partitions  = partition(subjects, splits)
     
     splits = []
 

@@ -31,9 +31,9 @@ from helpers_scenario2 import *
 
 # UNCOMMENT
 #annotations_folder = '../data/raw/scenario_4_test/fold_0/train/annotations/'
-annotations_folder = '../data/raw/scenario_4/fold_0/train/annotations/'
+annotations_folder = '../data/raw/scenario_2/fold_0/train/annotations/'
 
-physiology_folder = "../data/preprocessed/cleaned_and_prepro_improved/scenario_4/fold_0/train/physiology/" #'../data/raw/scenario_1/train/physiology/'data\preprocessed\
+physiology_folder = "../data/preprocessed/cleaned_and_prepro_improved/scenario_2/fold_0/train/physiology/" #'../data/raw/scenario_1/train/physiology/'data\preprocessed\
 
 #UNCOMMENT
 df_physiology = load_read_and_append_csvs(physiology_folder)

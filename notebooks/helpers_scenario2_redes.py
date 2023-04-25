@@ -150,8 +150,8 @@ def preprocess(df_phys, df_annotations,split, predictions_cols  = 'arousal', agg
     
     aggregate_local = aggregate.copy() if aggregate is not None else None
 
-    X_train = np.array([np.array(X_windows_train[:, :, i].tolist()) for i in range(X_windows_train.shape[2])])
-    X_test = np.array([np.array(X_windows_test[:, :, i].tolist()) for i in range(X_windows_test.shape[2])])
+    X_train = X_windows_train
+    X_test = X_windows_test
 
     
     X_train_aggregated = []
