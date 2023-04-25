@@ -50,6 +50,91 @@
             "average_rmse_arousal": 2.1286638396857813,
             "average_rmse_valence": 2.4234061897837806,
             "window": 500
+        },
+        {
+            "model": "KNeighborsRegressor",
+            "hyperparameters": {
+                "n_neighbors": 10,
+                "weights": "distance",
+                "algorithm": "auto"
+            },
+            "aggregate": [
+                "mean",
+                "std",
+                "max",
+                "min"
+            ],
+            "average_rmse_arousal": 2.1261925255080016,
+            "average_rmse_valence": 2.4209612041669626,
+            "window": 500
+        },
+        {
+            "model": "KNeighborsRegressor",
+            "hyperparameters": {
+                "n_neighbors": 10,
+                "weights": "uniform",
+                "algorithm": "auto"
+            },
+            "aggregate": [
+                "mean",
+                "std",
+                "max",
+                "min"
+            ],
+            "average_rmse_arousal": 2.1261921711600325,
+            "average_rmse_valence": 2.4209604249464305,
+            "window": 500
+        },
+        {
+            "model": "KNeighborsRegressor",
+            "hyperparameters": {
+                "n_neighbors": 3,
+                "weights": "uniform",
+                "algorithm": "auto"
+            },
+            "aggregate": [
+                "mean",
+                "std",
+                "max",
+                "min"
+            ],
+            "average_rmse_arousal": 2.139815886877906,
+            "average_rmse_valence": 2.4321177290780254,
+            "window": 500
+        },
+        {
+            "model": "KNeighborsRegressor",
+            "hyperparameters": {
+                "n_neighbors": 3,
+                "weights": "distance",
+                "algorithm": "auto"
+            },
+            "aggregate": [
+                "mean",
+                "std",
+                "max",
+                "min"
+            ],
+            "average_rmse_arousal": 2.1398159782079706,
+            "average_rmse_valence": 2.432117910094907,
+            "window": 500
+        },
+        {
+            "model": "KNeighborsRegressor",
+            "hyperparameters": {
+                "n_neighbors": 8,
+                "weights": "uniform",
+                "algorithm": "auto"
+            },
+            "aggregate": [
+                "mean",
+                "std",
+                "max",
+                "min"
+            ],
+            "average_rmse_arousal": 2.1286635281322956,
+            "average_rmse_valence": 2.423405552174613,
+            "window": 500
         }
     ]
 }
