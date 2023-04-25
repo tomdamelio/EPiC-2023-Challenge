@@ -86,19 +86,31 @@ def save_files(x, y, file_path, phys_folder, ann_folder):
     np.save(os.path.join(ann_folder, file_base_name), y)
 
     
-def load_and_concatenate_files(base_path, train_test_split, vid):
+def load_and_concatenate_files(base_path, train_test_split, vid ):
     train_data = []
     test_data = []
 
     for train_test, subs in train_test_split.items():
-        for sub in subs:
-            file_path = os.path.join(base_path, f"sub_{sub}_vid_{vid}.npy")
-            if os.path.exists(file_path):
-                data = np.load(file_path)
-                if train_test == "train":
-                    train_data.append(data)
-                else:
-                    test_data.append(data)
+        if type(vid) == 'list':
+            for v in vid:
+                for sub in subs:
+                    file_path = os.path.join(base_path, f"sub_{sub}_vid_{v}.npy")
+                    if os.path.exists(file_path):
+                        data = np.load(file_path)
+                        if train_test == "train":
+                            train_data.append(data)
+                        else:
+                            test_data.append(data)
+
+        else:
+            for sub in subs:
+                file_path = os.path.join(base_path, f"sub_{sub}_vid_{vid}.npy")
+                if os.path.exists(file_path):
+                    data = np.load(file_path)
+                    if train_test == "train":
+                        train_data.append(data)
+                    else:
+                        test_data.append(data)
 
     train_data = np.concatenate(train_data) if train_data else None
     test_data = np.concatenate(test_data) if test_data else None
