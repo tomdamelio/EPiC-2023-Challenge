@@ -1,0 +1,902 @@
+{
+    "0": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 1.98342686511488,
+            "average_rmse_valence": 1.235741624520959,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "3": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 1.716607536740063,
+            "average_rmse_valence": 1.9005497612147242,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "4": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 0.15046798468123182,
+            "average_rmse_valence": 1.4640980020228873,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "5": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 0.7197713490950082,
+            "average_rmse_valence": 0.8534796787079175,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "8": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 1.6814446553050792,
+            "average_rmse_valence": 1.2664816870549775,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "10": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 0.6125126360825779,
+            "average_rmse_valence": 2.369528365374699,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "11": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 0.6305620992709731,
+            "average_rmse_valence": 1.736969711036533,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "13": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 0.19202550792871276,
+            "average_rmse_valence": 0.4273549352597988,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "14": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 0.906439921845938,
+            "average_rmse_valence": 2.038951549238799,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "15": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 1.8420406933898297,
+            "average_rmse_valence": 1.6795138104351894,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "16": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 1.4919161148810953,
+            "average_rmse_valence": 0.48818942000335525,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "17": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 1.1827618594172853,
+            "average_rmse_valence": 1.0328569863853863,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "18": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 1.3031628018381423,
+            "average_rmse_valence": 0.6137688732896576,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "19": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 0.4243298930048809,
+            "average_rmse_valence": 0.7312882182199809,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "21": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 0.802986757443685,
+            "average_rmse_valence": 0.6188600328005865,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "22": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 1.0342549034103128,
+            "average_rmse_valence": 1.6510889483070155,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "23": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 1.3901249415883405,
+            "average_rmse_valence": 2.0287239074513224,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "26": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 1.023787301383608,
+            "average_rmse_valence": 0.9467254612049082,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "30": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 1.3116615538696956,
+            "average_rmse_valence": 1.2856659997666273,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "32": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 2.33916791023348,
+            "average_rmse_valence": 1.1177200229143207,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "33": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 1.8674354723705864,
+            "average_rmse_valence": 0.9713463873286002,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "34": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 0.9051217707682753,
+            "average_rmse_valence": 0.8675122595395076,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "35": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 1.013541418939304,
+            "average_rmse_valence": 2.2647521187467685,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "36": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 0.9270596427476536,
+            "average_rmse_valence": 1.1833085800654688,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "39": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 0.8083814700408994,
+            "average_rmse_valence": 0.9379722142465896,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "40": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 1.2994076960681784,
+            "average_rmse_valence": 1.7562199656063229,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "41": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 0.965873948482337,
+            "average_rmse_valence": 0.823310638732981,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "42": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 1.0130543804062915,
+            "average_rmse_valence": 1.014295062170872,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "43": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 1.3050168845365453,
+            "average_rmse_valence": 0.7380956120580467,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ],
+    "44": [
+        {
+            "model": "RandomForestRegressor",
+            "hyperparameters": {
+                "n_estimators": [
+                    100
+                ],
+                "max_depth": [
+                    null
+                ],
+                "min_samples_split": [
+                    5
+                ],
+                "min_samples_leaf": [
+                    1
+                ]
+            },
+            "aggregate": [
+                "mean",
+                "min"
+            ],
+            "average_rmse_arousal": 0.7161541320514099,
+            "average_rmse_valence": 1.011667106137546,
+            "window": [
+                -10000,
+                10000
+            ],
+            "partition_window": 2
+        }
+    ]
+}

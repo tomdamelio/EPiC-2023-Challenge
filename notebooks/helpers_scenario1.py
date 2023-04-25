@@ -1,10 +1,15 @@
 import glob
 import re
+import os
 
 import random
 
 import numpy as np
 import pandas as pd
+
+import contextlib
+import joblib
+from joblib import Parallel, delayed
 
 from scipy.signal import resample
 from sklearn.model_selection import TimeSeriesSplit
@@ -13,8 +18,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.metrics import mean_squared_error
-from joblib import Parallel, delayed
-
+from sklearn.multioutput import MultiOutputRegressor
 
 def zip_csv_files(folder_path_1, folder_path_2):
     """reads all csv files in the folder and returns a list of tuples with corresponding CSV file paths in both folders. Useful to loop over all files in two folders.
@@ -39,20 +43,37 @@ def zip_csv_files(folder_path_1, folder_path_2):
     return zipped_files
 
 
+def create_folder_structure(scenario_folder,):
+    # Convert to absolute path
+    scenario_folder = os.path.abspath(scenario_folder)
+    
+    # Join the path
+    path = os.path.join(scenario_folder,)
 
-def sliding_window_with_step(df, window_size, step = 0):
-    arr = df.values
-    nrows = ((arr.shape[0] - window_size) // step) + 1
-    n = arr.strides[0]
-    strided_arr = np.lib.stride_tricks.as_strided(
-        arr,
-        shape=(nrows, window_size, arr.shape[1]),
-        strides=(step * n, n, arr.strides[1]),
-    )
-    return strided_arr
+    # Create the preprocessed folder if it doesn't exist
+    preprocessed_folder = os.path.join(path, "preprocessed")
+    os.makedirs(preprocessed_folder, exist_ok=True)
 
+    # Create the physiology and annotations folders if they don't exist
+    phys_folder = os.path.join(preprocessed_folder, 'physiology')
+    ann_folder = os.path.join(preprocessed_folder,"annotations")
 
-def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', aggregate=None, window_duration=1000, step_duration=20, resample_rate=50):
+    os.makedirs(phys_folder, exist_ok=True)
+    os.makedirs(ann_folder, exist_ok=True)
+
+    # Return the path
+    return phys_folder, ann_folder
+
+def save_files(x, y, file_path, phys_folder, ann_folder):
+    subject_num, video_num = map(int, file_path.split('/')[-1].replace('.csv', '').split('_')[1::2])
+    
+    file_base_name = f'sub_{subject_num}_vid_{video_num}'
+    
+    np.save(os.path.join(phys_folder, file_base_name), x)
+    np.save(os.path.join(ann_folder, file_base_name), y)
+    
+    
+def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', aggregate=None, window = [-1000, 500], partition_window = 1):
     """
     Preprocesses the input data for further processing and modeling.
     
@@ -66,12 +87,8 @@ def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', agg
         The list of aggregation functions to apply on the input data.
         Available options are: 'mean', 'std', 'enlarged', or any combination of these.
         If None, it will return the 3D matrix as is.
-    window_duration : int, optional
-        The duration of the sliding window in milliseconds (default is 1000).
-    step_duration : int, optional
-        The step duration of the sliding window in milliseconds (default is 20).
-    resample_rate : int, optional
-        The resampling rate in Hz (default is 50).
+    window_duration : list, optional
+        The duration of the sliding window in milliseconds (default is -1000, 500).
     
     Returns:
     -------
@@ -86,21 +103,24 @@ def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', agg
     """
     df_physiology['time'] = pd.to_timedelta(df_physiology['time'], unit='ms')
     df_physiology.set_index('time', inplace=True)
+    df_annotations['time'] = pd.to_timedelta(df_annotations['time'], unit='ms')
 
-    resample_interval = int(1000 / resample_rate)
-    df_resampled = df_physiology.resample(f'{resample_interval}L').mean()
-
-    window_size = window_duration // resample_interval
-    step = step_duration // resample_interval
-
-    aligned_numeric = sliding_window_with_step(df_resampled, window_size, step)
-
-    X_windows = aligned_numeric[:len(df_annotations)]
-
+    X_windows =  sliding_window_with_annotation(df_physiology, df_annotations, start=window[0], end=window[1])
+    # print(f'X_windows dimensions: {X_windows.shape}')
 
     aggregate_local = aggregate.copy() if aggregate is not None else None
 
     X = np.array([np.array(X_windows[:, :, i].tolist()) for i in range(X_windows.shape[2])]).T
+    
+    # print('X shape: ', X.shape)
+    
+    
+    def partition_and_aggregate(arr, agg_func, partition_window):
+        partition_size = arr.shape[1] // partition_window
+        partitions = [arr[:, i * partition_size:(i + 1) * partition_size] for i in range(partition_window)]
+        partitions_aggregated = [np.apply_along_axis(agg_func, axis=1, arr=partition) for partition in partitions]
+        return np.concatenate(partitions_aggregated, axis=1)
+
     X_aggregated = []
 
     if aggregate_local is not None:
@@ -118,19 +138,64 @@ def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', agg
         }
 
         for agg in aggregate_local:
-            X_agg = np.apply_along_axis(agg_funcs[agg], axis=1, arr=X_windows)
+            X_agg = partition_and_aggregate(X_windows, agg_funcs[agg], partition_window)
             X_aggregated.append(X_agg)
 
         if X_aggregated:
             X = np.concatenate(X_aggregated, axis=1)
+    
+    # print('X shape: ', X.shape)
 
 
     y = df_annotations[predictions_cols].values
 
-    numeric_column_indices = [i for i, col_dtype in enumerate(df_resampled.dtypes) if np.issubdtype(col_dtype, np.number)]
-    categorical_column_indices = [i for i, col_dtype in enumerate(df_resampled.dtypes) if not np.issubdtype(col_dtype, np.number)]
+    numeric_column_indices = [i for i, col_dtype in enumerate(df_physiology.dtypes) if np.issubdtype(col_dtype, np.number)]
+    # categorical_column_indices = [i for i, col_dtype in enumerate(df_physiology.dtypes) if not np.issubdtype(col_dtype, np.number)]
 
-    return X, y, numeric_column_indices, categorical_column_indices
+    return X, y, numeric_column_indices #,categorical_column_indices
+
+def process_annotation(arr, timestamps, annotation_time, start, end, window_size):
+    window_start_time = max(0, annotation_time + start)
+    window_end_time = annotation_time + end
+
+    mask = (timestamps >= window_start_time) & (timestamps <= window_end_time)
+    
+    window_data = arr[mask, :]
+    
+    return window_data
+
+def sliding_window_with_annotation(df, df_annotations, start=-1000, end=500):
+    df_annotations.set_index('time', inplace=True)
+    window_size = abs(end - start) + 1
+
+    # Convert index to integer (milliseconds)
+    df.index = (df.index / pd.to_timedelta('1ms')).astype(int)
+    df_annotations.index = (df_annotations.index / pd.to_timedelta('1ms')).astype(int)
+
+    # Convert DataFrame to NumPy array
+    arr = df.values
+    timestamps = df.index.values
+
+    # Initialize the time_adjusted_arr list and max_rows variable
+    time_adjusted_arr = []
+    max_rows = 0
+
+    # Iterate through the annotations DataFrame
+    for _, row in df_annotations.iterrows():
+        annotation_time = row.name
+        result = process_annotation(arr, timestamps, annotation_time, start, end, window_size)
+        max_rows = max(max_rows, result.shape[0])
+        time_adjusted_arr.append(result)
+
+    # Pre-allocate the final_time_adjusted_arr with zeros
+    final_time_adjusted_arr = np.zeros((len(df_annotations), max_rows, arr.shape[1]))
+
+    # Fill the final_time_adjusted_arr with the data from time_adjusted_arr
+    for i, result in enumerate(time_adjusted_arr):
+        final_time_adjusted_arr[i, :result.shape[0], :] = result
+
+    # print(f'final_time_adjusted_arr dimensions: {final_time_adjusted_arr.shape}')
+    return final_time_adjusted_arr
 
 
 def _fit_and_evaluate(train_index, test_index, X, y, pipeline):
@@ -176,7 +241,7 @@ def time_series_cross_validation_with_hyperparameters(X, y, model, hyperparamete
 
     preprocessor = ColumnTransformer(transformers=[
         ('num', numeric_transformer, numeric_column_indices),
-        ('cat', categorical_transformer, categorical_column_indices)
+        # ('cat', categorical_transformer, categorical_column_indices)
     ])
 
     # Check if y has multiple outputs
@@ -205,3 +270,20 @@ def time_series_cross_validation_with_hyperparameters(X, y, model, hyperparamete
     average_rmse_per_output = np.mean(rmse_values_per_output, axis=0)
     print("Average Root Mean Squared Error per output:", average_rmse_per_output)
     return average_rmse_per_output
+
+
+# Define the context manager
+@contextlib.contextmanager
+def tqdm_joblib(tqdm_object):
+    class TqdmBatchCompletionCallback(joblib.parallel.BatchCompletionCallBack):
+        def __call__(self, *args, **kwargs):
+            tqdm_object.update(n=self.batch_size)
+            return super().__call__(*args, **kwargs)
+
+    old_batch_callback = joblib.parallel.BatchCompletionCallBack
+    joblib.parallel.BatchCompletionCallBack = TqdmBatchCompletionCallback
+    try:
+        yield tqdm_object
+    finally:
+        joblib.parallel.BatchCompletionCallBack = old_batch_callback
+        tqdm_object.close()
