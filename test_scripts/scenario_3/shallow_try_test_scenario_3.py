@@ -92,7 +92,7 @@ rf_pipeline = Pipeline([
 ])
 
 
-def test_function(sub):
+def test_function(sub, rf_pipeline):
     X_train  = load_and_concatenate_train(phys_folder_train, sub =sub, split=splits[1])
     y_train = load_and_concatenate_train(phys_folder_train, sub =sub, split=splits[1])
     
@@ -157,7 +157,7 @@ df_results.to_csv(os.path.join('../../results/scenario_3', 'results_rf.csv'), in
 pd.DataFrame(all_importances).describe()
 # %%
 for i in subjects:
-    test_function(i)
+    test_function(i, rf_pipeline)
     
 
 # %%

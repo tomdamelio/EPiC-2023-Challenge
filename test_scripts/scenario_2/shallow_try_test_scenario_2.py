@@ -20,7 +20,7 @@ from joblib import Parallel, delayed
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 
-from test_scripts.scenario_2.helpers_scenario2 import *
+from helpers_scenario2 import *
 
 #%%config
 scenario = 2
@@ -82,14 +82,13 @@ xgb = XGBRegressor(
     learning_rate = 0.1, 
 
 )
-
 xgb_pipeline = Pipeline([
     ('scaler', StandardScaler()),
     ('xgb', MultiOutputRegressor(xgb))
 ])
 
 
-def test_function(vid):
+def test_function(vid, xgb_pipeline):
     X_train  = load_and_concatenate_train(phys_folder_train, vid =vid, split=splits[1])
     y_train = load_and_concatenate_train(phys_folder_train, vid =vid, split=splits[1])
     
@@ -144,7 +143,7 @@ with parallel_backend('multiprocessing', n_jobs=  num_cpu_cores - 5):
             (delayed(test_function)(i) for i in videos))
         
     # Combine results for all subjects
-    for i in subjects:
+    for i in videos:
         all_results.append(results[i][0])
         all_importances.append(results[i][1])
 
@@ -154,7 +153,7 @@ df_results.to_csv(os.path.join('../../results/scenario_2', 'results_rf.csv'), in
 pd.DataFrame(all_importances).describe()
 # %%
 for i in videos:
-    test_function(i)
+    test_function(i, xgb_pipeline)
     
 
 # %%
