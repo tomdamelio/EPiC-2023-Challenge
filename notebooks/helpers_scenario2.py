@@ -118,7 +118,7 @@ def load_and_concatenate_files(base_path, train_test_split, vid ):
     return train_data, test_data
     
     
-def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', aggregate=None, window = [-1000, 500], partition_window = 1):
+def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', aggregate=None, window = [-1000, 500], partition_window = 1, downsample_window = 10):
     """
     Preprocesses the input data for further processing and modeling.
     
@@ -151,7 +151,7 @@ def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', agg
     df_annotations['time'] = pd.to_timedelta(df_annotations['time'], unit='ms')
     
 
-    X_windows =  sliding_window_with_annotation(df_physiology, df_annotations, start=window[0], end=window[1])
+    X_windows =  sliding_window_with_annotation(df_physiology, df_annotations, start=window[0], end=window[1], downsample = downsample_window)
     # print(f'X_windows dimensions: {X_windows.shape}')
 
     aggregate_local = aggregate.copy() if aggregate is not None else None
@@ -204,7 +204,7 @@ def resample_data(x, downsample):
     len_x = len(x)
     num = len_x // downsample
     
-    x_resample = resample(x, num=num, axis=1, domain='time')
+    x_resample = resample(x, num=num, axis=0, domain='time')
     
     return x_resample
     
@@ -221,7 +221,7 @@ def process_annotation(arr, timestamps, annotation_time, start, end, window_size
     
     return resampled_window
 
-def sliding_window_with_annotation(df, df_annotations, start=-1000, end=500):
+def sliding_window_with_annotation(df, df_annotations, start=-1000, end=500, downsample = 10):
     df_annotations.set_index('time', inplace=True)
     window_size = abs(end - start) + 1
 
@@ -240,7 +240,7 @@ def sliding_window_with_annotation(df, df_annotations, start=-1000, end=500):
     # Iterate through the annotations DataFrame
     for _, row in df_annotations.iterrows():
         annotation_time = row.name
-        result = process_annotation(arr, timestamps, annotation_time, start, end, window_size)
+        result = process_annotation(arr, timestamps, annotation_time, start, end, window_size, downsample)
         max_rows = max(max_rows, result.shape[0])
         time_adjusted_arr.append(result)
 
