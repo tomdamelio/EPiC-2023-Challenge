@@ -90,7 +90,7 @@ xgb_pipeline = Pipeline([
 
 def test_function(vid, xgb_pipeline):
     X_train  = load_and_concatenate_train(phys_folder_train, vid =vid, split=splits[1])
-    y_train = load_and_concatenate_train(phys_folder_train, vid =vid, split=splits[1])
+    y_train = load_and_concatenate_train(ann_folder_train, vid =vid, split=splits[1])
     
     print(vid)
     xgb_pipeline.fit(X_train, y_train)
@@ -99,7 +99,7 @@ def test_function(vid, xgb_pipeline):
     importances_subject = []
     for sub in splits[1]['test']:
         X_test = np.load(os.path.join(phys_folder_train, f"sub_{sub}_vid_{vid}.npy"))
-        y_test = np.load(os.path.join(phys_folder_train, f"sub_{sub}_vid_{vid}.npy"))
+        y_test = np.load(os.path.join(ann_folder_train, f"sub_{sub}_vid_{vid}.npy"))
         
         print(sub, vid)
         y_pred = xgb_pipeline.predict(X_test)
@@ -107,7 +107,7 @@ def test_function(vid, xgb_pipeline):
         importances = xgb_pipeline.named_steps['xgb'].estimators_[0].feature_importances_
         rmse_per_output = mean_squared_error(y_test, y_pred, squared=False, multioutput='raw_values')
         
-        path_csv_test =  os.path.join(ann_folder_test, f"sub_{sub}_vid_{vid}.csv")
+        path_csv_test =  os.path.join(ann_folder_train, f"sub_{sub}_vid_{vid}.csv")
 
         save_test_data(y_pred, output_folder, path_csv_test, test = False, y_test = y_test)
         

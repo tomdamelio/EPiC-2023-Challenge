@@ -94,24 +94,23 @@ rf_pipeline = Pipeline([
 
 def test_function(sub, rf_pipeline):
     X_train  = load_and_concatenate_train(phys_folder_train, sub =sub, split=splits[1])
-    y_train = load_and_concatenate_train(phys_folder_train, sub =sub, split=splits[1])
+    y_train = load_and_concatenate_train(ann_folder_train, sub =sub, split=splits[1])
     
-    print(sub)
     rf_pipeline.fit(X_train, y_train)
     
     rmse_subject = []
     importances_subject = []
     for vid in splits[1]['test']:
         X_test = np.load(os.path.join(phys_folder_train, f"sub_{sub}_vid_{vid}.npy"))
-        y_test = np.load(os.path.join(phys_folder_train, f"sub_{sub}_vid_{vid}.npy"))
+        y_test = np.load(os.path.join(ann_folder_train, f"sub_{sub}_vid_{vid}.npy"))
         
-        print(sub, vid)
+
         y_pred = rf_pipeline.predict(X_test)
         
         importances = rf_pipeline.named_steps['rf'].estimators_[0].feature_importances_
         rmse_per_output = mean_squared_error(y_test, y_pred, squared=False, multioutput='raw_values')
         
-        path_csv_test =  os.path.join(ann_folder_test, f"sub_{sub}_vid_{vid}.csv")
+        path_csv_test =  os.path.join(ann_folder_train, f"sub_{sub}_vid_{vid}.csv")
 
         save_test_data(y_pred, output_folder, path_csv_test, test = False, y_test = y_test)
         
@@ -144,10 +143,10 @@ all_importances = []
 with parallel_backend('multiprocessing', n_jobs=  num_cpu_cores - 5):
     with tqdm_joblib(tqdm(total=len(subjects), desc="Files", leave=False)) as progress_bar:
         results = Parallel()(
-            (delayed(test_function)(i) for i in subjects))
+            (delayed(test_function)(i, rf_pipeline) for i in subjects))
         
     # Combine results for all subjects
-    for i in subjects:
+    for i in range(len(subjects)):
         all_results.append(results[i][0])
         all_importances.append(results[i][1])
 
@@ -156,10 +155,8 @@ df_results.to_csv(os.path.join('../../results/scenario_3', 'results_rf.csv'), in
 
 pd.DataFrame(all_importances).describe()
 # %%
-for i in subjects:
-    test_function(i, rf_pipeline)
+for i in subjects[:1]:
+    a = test_function(i, rf_pipeline)
     
 
 # %%
-    
-    
