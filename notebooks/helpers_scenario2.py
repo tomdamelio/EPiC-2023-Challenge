@@ -6,12 +6,12 @@ import random
 
 import numpy as np
 import pandas as pd
+from scipy.signal import resample
 
 import contextlib
 import joblib
 from joblib import Parallel, delayed
 
-from scipy.signal import resample
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
@@ -149,6 +149,7 @@ def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', agg
     df_physiology['time'] = pd.to_timedelta(df_physiology['time'], unit='ms')
     df_physiology.set_index('time', inplace=True)
     df_annotations['time'] = pd.to_timedelta(df_annotations['time'], unit='ms')
+    
 
     X_windows =  sliding_window_with_annotation(df_physiology, df_annotations, start=window[0], end=window[1])
     # print(f'X_windows dimensions: {X_windows.shape}')
@@ -199,7 +200,16 @@ def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', agg
 
     return X, y, numeric_column_indices #,categorical_column_indices
 
-def process_annotation(arr, timestamps, annotation_time, start, end, window_size):
+def resample_data(x, downsample):
+    len_x = len(x)
+    num = len_x // downsample
+    
+    x_resample = resample(x, num=num, axis=1, domain='time')
+    
+    return x_resample
+    
+
+def process_annotation(arr, timestamps, annotation_time, start, end, window_size, downsample = 10):
     window_start_time = max(0, annotation_time + start)
     window_end_time = annotation_time + end
 
@@ -207,7 +217,9 @@ def process_annotation(arr, timestamps, annotation_time, start, end, window_size
     
     window_data = arr[mask, :]
     
-    return window_data
+    resampled_window = resample_data(window_data, downsample)
+    
+    return resampled_window
 
 def sliding_window_with_annotation(df, df_annotations, start=-1000, end=500):
     df_annotations.set_index('time', inplace=True)

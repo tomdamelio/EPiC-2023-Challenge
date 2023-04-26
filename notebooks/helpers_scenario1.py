@@ -42,27 +42,76 @@ def zip_csv_files(folder_path_1, folder_path_2):
 
     return zipped_files
 
+def zip_csv_train_test_files(folder_phys_train, folder_ann_train, folder_phys_test, folder_ann_test, format = '.csv'):
+    """reads all csv or npy files in the folder and returns a list of tuples with corresponding CSV file paths in both folders. Useful to loop over all files in two folders.
 
-def create_folder_structure(scenario_folder,):
-    # Convert to absolute path
-    scenario_folder = os.path.abspath(scenario_folder)
+    Args:
+        folder_path_1 (_type_): _description_
+        folder_path_2 (_type_): _description_
+
+    Returns:
+        zipped_files: (tuple) list of tuples with corresponding CSV file paths in both folders
+    """
+    if format == '.csv':
+        files_phys_train = glob.glob(folder_phys_train + '/*.csv')
+        files_ann_train = glob.glob(folder_ann_train + '/*.csv')
+        files_phys_test = glob.glob(folder_phys_test + '/*.csv')
+        files_ann_test = glob.glob(folder_ann_test + '/*.csv')
+
+    elif format == '.npy':
+        files_phys_train = glob.glob(folder_phys_train + '/*.npy')
+        files_ann_train = glob.glob(folder_ann_train + '/*.npy')
+        files_phys_test = glob.glob(folder_phys_test + '/*.npy')
+        files_ann_test = glob.glob(folder_ann_test + '/*.npy')
+
+
+    # Create a dictionary with keys as (subject_num, video_num) and values as the file path
+    files_dict_phys_train = {(int(s), int(v)): f for f in files_phys_train for s, v in re.findall(r'sub_(\d+)_vid_(\d+)', f)}
+    files_dict_ann_train = {(int(s), int(v)): f for f in files_ann_train for s, v in re.findall(r'sub_(\d+)_vid_(\d+)', f)}
     
-    # Join the path
-    path = os.path.join(scenario_folder,)
+    files_dict_phys_test = {(int(s), int(v)): f for f in files_phys_test for s, v in re.findall(r'sub_(\d+)_vid_(\d+)', f)}
+    files_dict_ann_test = {(int(s), int(v)): f for f in files_ann_test for s, v in re.findall(r'sub_(\d+)_vid_(\d+)', f)}
 
-    # Create the preprocessed folder if it doesn't exist
-    preprocessed_folder = os.path.join(path, "preprocessed")
-    os.makedirs(preprocessed_folder, exist_ok=True)
+    # Create a list of tuples with corresponding CSV file paths in both folders
+    zipped_files_train = [(files_dict_phys_train[key], files_dict_ann_train[key]) for key in files_dict_phys_train if key in files_dict_ann_train]
+    zipped_files_test = [(files_dict_phys_test[key], files_dict_ann_test[key]) for key in files_dict_phys_test if key in files_dict_ann_test]
+    
+    zipped_dict = {'train': zipped_files_train, 'test': zipped_files_test}
+    
 
-    # Create the physiology and annotations folders if they don't exist
-    phys_folder = os.path.join(preprocessed_folder, 'physiology')
-    ann_folder = os.path.join(preprocessed_folder,"annotations")
+    return zipped_dict
 
-    os.makedirs(phys_folder, exist_ok=True)
-    os.makedirs(ann_folder, exist_ok=True)
+def create_folder_structure(root_physiology_folder, root_annotations_folder, save_output_folder, scenario, fold=None, test=False):
+    # Create scenario path
+    scenario_str = f"scenario_{scenario}"
+    
+    # Create fold path if fold is not None
+    fold_str = "" if fold is None else f"fold_{fold}"
 
-    # Return the path
-    return phys_folder, ann_folder
+    # Create paths
+    if test:
+        phys_folder_train = os.path.join(root_physiology_folder, scenario_str, fold_str, "train", "physiology")
+        ann_folder_train = os.path.join(root_annotations_folder, scenario_str, fold_str, "train", "annotations")
+        phys_folder_test = os.path.join(root_physiology_folder, scenario_str, fold_str, "test", "physiology")
+        ann_folder_test = os.path.join(root_annotations_folder, scenario_str, fold_str, "test", "annotations")
+    else:
+        phys_folder_train = os.path.join(root_physiology_folder, scenario_str, fold_str, "physiology")
+        ann_folder_train = os.path.join(root_annotations_folder, scenario_str, fold_str, "annotations")
+        phys_folder_test = None
+        ann_folder_test = None
+
+    output_folder = os.path.join(save_output_folder, scenario_str, fold_str)
+
+    # Create directories if they don't exist
+    for folder in [phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, output_folder]:
+        if folder is not None:
+            os.makedirs(folder, exist_ok=True)
+            
+    if test:
+        return phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, output_folder
+    else:
+        return phys_folder_train, ann_folder_train, output_folder
+
 
 def save_files(x, y, file_path, phys_folder, ann_folder):
     subject_num, video_num = map(int, file_path.split('/')[-1].replace('.csv', '').split('_')[1::2])
@@ -72,6 +121,34 @@ def save_files(x, y, file_path, phys_folder, ann_folder):
     np.save(os.path.join(phys_folder, file_base_name), x)
     np.save(os.path.join(ann_folder, file_base_name), y)
     
+    
+
+    
+def load_and_concatenate_files(base_path, train_test_split, vid ):
+    train_data = []
+    test_data = []
+
+    for train_test, subs in train_test_split.items():
+        if type(vid) == 'list':
+            for v in vid:
+                for sub in subs:
+                    file_path = os.path.join(base_path, f"sub_{sub}_vid_{v}.npy")
+                    if os.path.exists(file_path):
+                        data = np.load(file_path)
+                        if train_test == "train":
+                            train_data.append(data)
+                        else:
+                            test_data.append(data)
+
+        else:
+            for sub in subs:
+                file_path = os.path.join(base_path, f"sub_{sub}_vid_{vid}.npy")
+                if os.path.exists(file_path):
+                    data = np.load(file_path)
+                    if train_test == "train":
+                        train_data.append(data)
+                    else:
+                        test_data.append(data)
     
 def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', aggregate=None, window = [-1000, 500], partition_window = 1):
     """
@@ -211,7 +288,7 @@ def _fit_and_evaluate(train_index, test_index, X, y, pipeline):
 
 from sklearn.multioutput import MultiOutputRegressor
 
-def time_series_cross_validation_with_hyperparameters(X, y, model, hyperparameters, n_splits=5, n_jobs=-1, numeric_column_indices=None, categorical_column_indices=None):
+def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, y_test, model, numeric_column_indices=None,test = True):
     """
     Perform time series cross-validation with hyperparameters for a given model.
 
@@ -228,16 +305,15 @@ def time_series_cross_validation_with_hyperparameters(X, y, model, hyperparamete
     Returns:
         float: The average root mean squared error (RMSE) across all splits.
     """
-    tscv = TimeSeriesSplit(n_splits=n_splits)
 
     numeric_transformer = Pipeline(steps=[
         ('imputer', SimpleImputer(strategy='median')),
         ('scaler', StandardScaler())
     ])
 
-    categorical_transformer = Pipeline(steps=[
-        ('encoder', OneHotEncoder(handle_unknown='ignore'))
-    ])
+    # categorical_transformer = Pipeline(steps=[
+    #     ('encoder', OneHotEncoder(handle_unknown='ignore'))
+    # ])
 
     preprocessor = ColumnTransformer(transformers=[
         ('num', numeric_transformer, numeric_column_indices),
@@ -245,10 +321,10 @@ def time_series_cross_validation_with_hyperparameters(X, y, model, hyperparamete
     ])
 
     # Check if y has multiple outputs
-    multi_output = y.ndim > 1 and y.shape[1] > 1
+    multi_output = y_train.ndim > 1 and y_train.shape[1] > 1
 
     # Wrap the model in a MultiOutputRegressor if needed
-    model_instance = model(**hyperparameters)
+    model_instance = model
     if multi_output:
         model_instance = MultiOutputRegressor(model_instance)
 
@@ -256,20 +332,20 @@ def time_series_cross_validation_with_hyperparameters(X, y, model, hyperparamete
         ('preprocessor', preprocessor),
         ('model', model_instance)
     ])
+    
+    pipeline.fit(X_train, y_train)
+    y_pred = pipeline.predict(X_test)
 
-    # Initialize an empty list to store RMSE values for each output
-    rmse_values_per_output = []
+    if test:
+        return y_pred
+    
+    else:
+        # Calculate RMSE for each output separately
+        rmse_per_output = mean_squared_error(y_test, y_pred, squared=False, multioutput='raw_values')
 
-    # Parallelize the computation using Joblib
-    rmse_values_per_output = Parallel(n_jobs=n_jobs)(
-        delayed(_fit_and_evaluate)(train_index, test_index, X, y, pipeline)
-        for train_index, test_index in tscv.split(X)
-    )
-
-    # Calculate the average RMSE for each output separately
-    average_rmse_per_output = np.mean(rmse_values_per_output, axis=0)
-    print("Average Root Mean Squared Error per output:", average_rmse_per_output)
-    return average_rmse_per_output
+        return rmse_per_output
+ 
+import os
 
 
 # Define the context manager
