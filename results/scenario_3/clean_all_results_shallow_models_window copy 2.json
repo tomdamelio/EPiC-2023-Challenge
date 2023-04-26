@@ -898,35 +898,5 @@
             ],
             "partition_window": 2
         }
-    ],
-    "[-10000, 10000]": [
-        {
-            "model": "RandomForestRegressor",
-            "hyperparameters": {
-                "n_estimators": [
-                    100
-                ],
-                "max_depth": [
-                    null
-                ],
-                "min_samples_split": [
-                    5
-                ],
-                "min_samples_leaf": [
-                    1
-                ]
-            },
-            "aggregate": [
-                "mean",
-                "min"
-            ],
-            "average_rmse_arousal": 0.7630568592335664,
-            "average_rmse_valence": 1.2880608157793698,
-            "window": [
-                -10000,
-                10000
-            ],
-            "partition_window": 5
-        }
     ]
 }

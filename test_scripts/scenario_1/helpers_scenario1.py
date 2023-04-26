@@ -42,26 +42,13 @@ def zip_csv_files(folder_path_1, folder_path_2):
 
     return zipped_files
 
-def get_subs_vids(folder_path):
-    subs = set()
-    vids = set()
 
-    for file_name in os.listdir(folder_path):
-        if file_name.endswith('.csv'):
-            match = re.match(r"sub_(\d+)_vid_(\d+).csv", file_name)
-            if match:
-                sub, vid = match.groups()
-                subs.add(int(sub))
-                vids.add(int(vid))
-
-    return sorted(list(subs)), sorted(list(vids))
-
-def create_folder_structure(scenario_folder, fold,):
+def create_folder_structure(scenario_folder,):
     # Convert to absolute path
     scenario_folder = os.path.abspath(scenario_folder)
     
     # Join the path
-    path = os.path.join(scenario_folder, f"fold_{fold}")
+    path = os.path.join(scenario_folder,)
 
     # Create the preprocessed folder if it doesn't exist
     preprocessed_folder = os.path.join(path, "preprocessed")
@@ -84,26 +71,8 @@ def save_files(x, y, file_path, phys_folder, ann_folder):
     
     np.save(os.path.join(phys_folder, file_base_name), x)
     np.save(os.path.join(ann_folder, file_base_name), y)
-
     
-def load_and_concatenate_files(base_path, train_test_split, sub):
-    train_data = []
-    test_data = []
-
-    for train_test, vids in train_test_split.items():
-        for vid in vids:
-            file_path = os.path.join(base_path, f"sub_{sub}_vid_{vid}.npy")
-            if os.path.exists(file_path):
-                data = np.load(file_path)
-                if train_test == "train":
-                    train_data.append(data)
-                else:
-                    test_data.append(data)
-
-    train_data = np.concatenate(train_data) if train_data else None
-    test_data = np.concatenate(test_data) if test_data else None
-
-    return train_data, test_data
+    return None
     
     
 def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', aggregate=None, window = [-1000, 500], partition_window = 1):
@@ -144,9 +113,9 @@ def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', agg
     aggregate_local = aggregate.copy() if aggregate is not None else None
 
     X = np.array([np.array(X_windows[:, :, i].tolist()) for i in range(X_windows.shape[2])]).T
-    y = df_annotations[predictions_cols].values
     
     # print('X shape: ', X.shape)
+    
     
     def partition_and_aggregate(arr, agg_func, partition_window):
         partition_size = arr.shape[1] // partition_window
@@ -180,9 +149,9 @@ def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', agg
     # print('X shape: ', X.shape)
 
 
-    
+    y = df_annotations[predictions_cols].values
 
-    # numeric_column_indices = [i for i, col_dtype in enumerate(df_physiology.dtypes) if np.issubdtype(col_dtype, np.number)]
+    numeric_column_indices = [i for i, col_dtype in enumerate(df_physiology.dtypes) if np.issubdtype(col_dtype, np.number)]
     # categorical_column_indices = [i for i, col_dtype in enumerate(df_physiology.dtypes) if not np.issubdtype(col_dtype, np.number)]
 
     return X, y, #numeric_column_indices #,categorical_column_indices
@@ -231,35 +200,10 @@ def sliding_window_with_annotation(df, df_annotations, start=-1000, end=500):
     return final_time_adjusted_arr
 
 
-def split_categories_videos_train_test(videos, categories,cat_dict,splits):
-    """Split videos into train and test sets considering the category.
+def _fit_and_evaluate(train_index, test_index, X, y, pipeline):
+    X_train, X_test = X[train_index], X[test_index]
+    y_train, y_test = y[train_index], y[test_index]
 
-    Args:
-        subjects (_type_): _description_
-        splits (_type_): _description_
-
-    Returns:
-        splits: list of dictionaries with keys 'train' and 'test' and values as lists of subject numbers.
-    """
-    def partition (list_in, n):
-        random.shuffle(list_in)
-        return [list_in[i] for i in range(n)]
-    
-    partitions  = partition(categories, 3)
-    
-    splits = []
-
-    for i in partitions:
-        train = [video for video in videos if video not in cat_dict[i]]
-        test = cat_dict[i]
-        
-        splits.append({'train': train, 'test': test})
-        
-    return splits
-
-
-
-def _fit_and_evaluate(X_train, X_test, y_train, y_test, pipeline):
     pipeline.fit(X_train, y_train)
     y_pred = pipeline.predict(X_test)
 
@@ -267,8 +211,9 @@ def _fit_and_evaluate(X_train, X_test, y_train, y_test, pipeline):
     rmse_per_output = mean_squared_error(y_test, y_pred, squared=False, multioutput='raw_values')
     return rmse_per_output
 
+from sklearn.multioutput import MultiOutputRegressor
 
-def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, y_test, model, hyperparameters, n_jobs=-1, numeric_column_indices=None, categorical_column_indices=None):
+def time_series_cross_validation_with_hyperparameters(X, y, model, hyperparameters, n_splits=5, n_jobs=-1, numeric_column_indices=None, categorical_column_indices=None):
     """
     Perform time series cross-validation with hyperparameters for a given model.
 
@@ -285,6 +230,7 @@ def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, 
     Returns:
         float: The average root mean squared error (RMSE) across all splits.
     """
+    tscv = TimeSeriesSplit(n_splits=n_splits)
 
     numeric_transformer = Pipeline(steps=[
         ('imputer', SimpleImputer(strategy='median')),
@@ -301,7 +247,7 @@ def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, 
     ])
 
     # Check if y has multiple outputs
-    multi_output = y_train.ndim > 1 and y_train.shape[1] > 1
+    multi_output = y.ndim > 1 and y.shape[1] > 1
 
     # Wrap the model in a MultiOutputRegressor if needed
     model_instance = model(**hyperparameters)
@@ -316,21 +262,15 @@ def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, 
     # Initialize an empty list to store RMSE values for each output
     rmse_values_per_output = []
 
-     # Number of instances to run in parallel
-    n_instances = 5  # Adjust this value based on the available resources and dataset size
-    
     # Parallelize the computation using Joblib
     rmse_values_per_output = Parallel(n_jobs=n_jobs)(
-        delayed(_fit_and_evaluate)(X_train, X_test, y_train, y_test, pipeline)
-        for _ in range(n_instances)
+        delayed(_fit_and_evaluate)(train_index, test_index, X, y, pipeline)
+        for train_index, test_index in tscv.split(X)
     )
 
     # Calculate the average RMSE for each output separately
     average_rmse_per_output = np.mean(rmse_values_per_output, axis=0)
-    
-    model_name = model.__name__
-
-    # print(f"Testing model: {model_name}. Average Root Mean Squared Error per output: {average_rmse_per_output}. ")
+    print("Average Root Mean Squared Error per output:", average_rmse_per_output)
     return average_rmse_per_output
 
 
