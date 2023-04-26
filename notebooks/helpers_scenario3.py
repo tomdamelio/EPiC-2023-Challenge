@@ -106,7 +106,7 @@ def load_and_concatenate_files(base_path, train_test_split, sub):
     return train_data, test_data
     
     
-def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', aggregate=None, window = [-1000, 500], partition_window = 1):
+def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', aggregate=None, window = [-1000, 500], partition_window = 1, downsample_window = 10):
     """
     Preprocesses the input data for further processing and modeling.
     
@@ -137,17 +137,18 @@ def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', agg
     df_physiology['time'] = pd.to_timedelta(df_physiology['time'], unit='ms')
     df_physiology.set_index('time', inplace=True)
     df_annotations['time'] = pd.to_timedelta(df_annotations['time'], unit='ms')
+    
 
-    X_windows =  sliding_window_with_annotation(df_physiology, df_annotations, start=window[0], end=window[1])
+    X_windows =  sliding_window_with_annotation(df_physiology, df_annotations, start=window[0], end=window[1], downsample = downsample_window)
     # print(f'X_windows dimensions: {X_windows.shape}')
 
     aggregate_local = aggregate.copy() if aggregate is not None else None
 
     X = np.array([np.array(X_windows[:, :, i].tolist()) for i in range(X_windows.shape[2])]).T
-    y = df_annotations[predictions_cols].values
     
     # print('X shape: ', X.shape)
     
+
     def partition_and_aggregate(arr, agg_func, partition_window):
         partition_size = arr.shape[1] // partition_window
         partitions = [arr[:, i * partition_size:(i + 1) * partition_size] for i in range(partition_window)]
@@ -180,14 +181,23 @@ def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', agg
     # print('X shape: ', X.shape)
 
 
-    
+    y = df_annotations[predictions_cols].values
 
-    # numeric_column_indices = [i for i, col_dtype in enumerate(df_physiology.dtypes) if np.issubdtype(col_dtype, np.number)]
+    numeric_column_indices = [i for i, col_dtype in enumerate(df_physiology.dtypes) if np.issubdtype(col_dtype, np.number)]
     # categorical_column_indices = [i for i, col_dtype in enumerate(df_physiology.dtypes) if not np.issubdtype(col_dtype, np.number)]
 
-    return X, y, #numeric_column_indices #,categorical_column_indices
+    return X, y, numeric_column_indices #,categorical_column_indices
 
-def process_annotation(arr, timestamps, annotation_time, start, end, window_size):
+def resample_data(x, downsample):
+    len_x = len(x)
+    num = len_x // downsample
+    
+    x_resample = resample(x, num=num, axis=0, domain='time')
+    
+    return x_resample
+    
+
+def process_annotation(arr, timestamps, annotation_time, start, end, window_size, downsample = 10):
     window_start_time = max(0, annotation_time + start)
     window_end_time = annotation_time + end
 
@@ -195,9 +205,11 @@ def process_annotation(arr, timestamps, annotation_time, start, end, window_size
     
     window_data = arr[mask, :]
     
-    return window_data
+    resampled_window = resample_data(window_data, downsample)
+    
+    return resampled_window
 
-def sliding_window_with_annotation(df, df_annotations, start=-1000, end=500):
+def sliding_window_with_annotation(df, df_annotations, start=-1000, end=500, downsample = 10):
     df_annotations.set_index('time', inplace=True)
     window_size = abs(end - start) + 1
 
@@ -216,7 +228,7 @@ def sliding_window_with_annotation(df, df_annotations, start=-1000, end=500):
     # Iterate through the annotations DataFrame
     for _, row in df_annotations.iterrows():
         annotation_time = row.name
-        result = process_annotation(arr, timestamps, annotation_time, start, end, window_size)
+        result = process_annotation(arr, timestamps, annotation_time, start, end, window_size, downsample)
         max_rows = max(max_rows, result.shape[0])
         time_adjusted_arr.append(result)
 
