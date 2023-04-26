@@ -19,6 +19,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.metrics import mean_squared_error
 from sklearn.multioutput import MultiOutputRegressor
+from sklearn.decomposition import PCA
 
 def zip_csv_files(folder_path_1, folder_path_2):
     """reads all csv files in the folder and returns a list of tuples with corresponding CSV file paths in both folders. Useful to loop over all files in two folders.
@@ -342,6 +343,7 @@ def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, 
 
     pipeline = Pipeline([
         ('preprocessor', preprocessor),
+        # ('pca', PCA(n_components=5)),
         ('model', model_instance)
     ])
     
@@ -353,9 +355,10 @@ def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, 
     
     else:
         # Calculate RMSE for each output separately
+        importances = pipeline.named_steps['model'].estimators_[0].feature_importances_
         rmse_per_output = mean_squared_error(y_test, y_pred, squared=False, multioutput='raw_values')
 
-        return y_pred, rmse_per_output
+        return y_pred, rmse_per_output, importances
 
 
 # Define the context manager
@@ -384,8 +387,8 @@ def save_test_data(y_pred, output_folder, y_test_file, test = True, y_test = Non
         df['arousal'] = y_pred[:, 1]  
     else:
         df = pd.DataFrame(y_test, columns=['valence', 'arousal'])
-        df['valence_pred'] = y_pred[:, 1]
-        df['arousal_pred'] = y_pred[:, 0] 
+        df['valence_pred'] = y_pred[:, 0]
+        df['arousal_pred'] = y_pred[:, 1] 
         df['time'] = pd.read_csv(y_test_file).tail(df.shape[0])['time'].values     
     
 
