@@ -20,15 +20,15 @@ from joblib import Parallel, delayed
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 
-from helpers_scenario1 import *
+from test_scripts.scenario_2.helpers_scenario2 import *
 
 #%%config
-scenario = 1
-fold = None
+scenario = 2
+fold = 0
 root_physiology_folder = "../../data/preprocessed/cleaned_and_prepro_improved/"
 root_annotations_folder = "../../data/raw/"
 # save_output_folder = "../../test/annotations/"
-save_output_folder = "../../results/test/scenario_1/annotations/"
+save_output_folder = "../../results/test/"
 
 
 phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, output_folder, = create_folder_structure(
@@ -38,6 +38,11 @@ phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, output_f
 zipped_dict = zip_csv_train_test_files(phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, format = '.csv')
 # print(len(zipped_dict['train']))
 
+subjects, videos = get_subs_vids(phys_folder_train)
+
+splits = splits = split_subjects_train_test(subjects, 3)
+
+#%%
 def process_files(annotation_file, physiology_file,):
     df_annotations = pd.read_csv(annotation_file)
     df_physiology = pd.read_csv(physiology_file)
@@ -50,8 +55,8 @@ def process_files(annotation_file, physiology_file,):
     
     return None
 
-#%%
-# Process the files using the context manager
+
+# # Process the files using the context manager
 for key in zipped_dict.keys():
     with parallel_backend('multiprocessing', n_jobs= multiprocessing.cpu_count()//2):
         with tqdm_joblib(tqdm(total=len(zipped_dict[key]), desc=f"{key} files", leave=False)) as progress_bar:
@@ -60,85 +65,98 @@ for key in zipped_dict.keys():
             )
 
 #%%
+
+knn = KNeighborsRegressor(n_neighbors=5)
 knn_pipeline = Pipeline([
     ('scaler', StandardScaler()),
     ('pca', PCA(n_components=2)),
-    ('knn', KNeighborsRegressor(n_neighbors=5))
+    ('knn', MultiOutputRegressor(knn))
 ])
 
 
+
 # Define models and hyperparameters
-random_forest = RandomForestRegressor(
+xgb = XGBRegressor(
     n_estimators=50, 
-    max_depth=10, 
-    min_samples_split=2, 
-    min_samples_leaf=1, 
-    # max_features='auto'
+    max_depth=6, 
+    learning_rate = 0.1, 
+
 )
 
-zipped_dict_npy = zip_csv_train_test_files(phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, format = '.npy')
+xgb_pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('xgb', MultiOutputRegressor(xgb))
+])
 
 
-def test_function(i):
-    # print(zipped_dict_npy['train'][i][0])
+def test_function(vid):
+    X_train  = load_and_concatenate_train(phys_folder_train, vid =vid, split=splits[1])
+    y_train = load_and_concatenate_train(phys_folder_train, vid =vid, split=splits[1])
     
-    X = np.load(zipped_dict_npy['train'][i][0])
-    y = np.load(zipped_dict_npy['train'][i][1])
+    print(vid)
+    xgb_pipeline.fit(X_train, y_train)
     
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle = False)
-    
-    knn_pipeline.fit(X_train, y_train)
-    knn_output_train = knn_pipeline.predict(X_train)
-    knn_output_test = knn_pipeline.predict(X_test)
+    rmse_subject = []
+    importances_subject = []
+    for sub in splits[1]['test']:
+        X_test = np.load(os.path.join(phys_folder_train, f"sub_{sub}_vid_{vid}.npy"))
+        y_test = np.load(os.path.join(phys_folder_train, f"sub_{sub}_vid_{vid}.npy"))
+        
+        print(sub, vid)
+        y_pred = xgb_pipeline.predict(X_test)
+        
+        importances = xgb_pipeline.named_steps['xgb'].estimators_[0].feature_importances_
+        rmse_per_output = mean_squared_error(y_test, y_pred, squared=False, multioutput='raw_values')
+        
+        path_csv_test =  os.path.join(ann_folder_test, f"sub_{sub}_vid_{vid}.csv")
 
-    X_train_knn = np.column_stack((knn_output_train, X_train))
-    X_test_knn = np.column_stack(( knn_output_test, X_test))
-
+        save_test_data(y_pred, output_folder, path_csv_test, test = False, y_test = y_test)
+        
+        rmse_subject.append(rmse_per_output)
+        importances_subject.append(importances)
     
-    y_pred, rmse_per_output, importances = time_series_cross_validation_with_hyperparameters(
-                               X_train_knn, X_test_knn, y_train, y_test,
-                                random_forest, numeric_column_indices=np.array(range(X_train.shape[1])), test= False)
+    return np.mean(rmse_subject, axis = 0), np.mean(importances_subject, axis=0)
+        
+        
+    
+    
+    # knn_pipeline.fit(X_train, y_train)
+    # knn_output_train = knn_pipeline.predict(X_train)
+    # knn_output_test = knn_pipeline.predict(X_test)
+
+    # X_train_knn = np.column_stack((knn_output_train, X_train))
+    # X_test_knn = np.column_stack(( knn_output_test, X_test))
     
     # print(rmse_per_output)
-    save_test_data(y_pred, output_folder, zipped_dict_npy['train'][i][1], test = False, y_test = y_test)    
+    save_test_data(y_pred, output_folder, subject, test = False, y_test = y_test)    
     return rmse_per_output, importances
 
-# def test_function(i):
-#     X_train = np.load(zipped_dict_npy['train'][i][0])
-#     y_train = np.load(zipped_dict_npy['train'][i][1])
-#     X_test = np.load(zipped_dict_npy['test'][i][0])
-#     y_test = np.load(zipped_dict_npy['test'][i][1])
-    
-#     y_pred = time_series_cross_validation_with_hyperparameters(
-#                                X_train, X_test, y_train, y_test,
-#                                 random_forest, numeric_column_indices=np.array(range(X_train.shape[1])))
-    
-    
     save_test_data(y_pred, output_folder, zipped_dict_npy['test'][i][1])
-    
+
+
+#%%
 num_cpu_cores = multiprocessing.cpu_count()
 all_results = []
 all_importances = []
 with parallel_backend('multiprocessing', n_jobs=  num_cpu_cores - 5):
-    with tqdm_joblib(tqdm(total=len(zipped_dict['train']), desc="Files", leave=False)) as progress_bar:
+    with tqdm_joblib(tqdm(total=len(subjects), desc="Files", leave=False)) as progress_bar:
         results = Parallel()(
-            (delayed(test_function)(i) for i in range(len(zipped_dict['train'])))
-        )
+            (delayed(test_function)(i) for i in videos))
+        
     # Combine results for all subjects
-    for i in range(len(zipped_dict['train'])):
+    for i in subjects:
         all_results.append(results[i][0])
         all_importances.append(results[i][1])
 
 df_results = pd.DataFrame(all_results, columns=['arousal', 'valence'])
-df_results.to_csv(os.path.join('../../results/scenario_1', 'results_rf.csv'), index=False)
+df_results.to_csv(os.path.join('../../results/scenario_2', 'results_rf.csv'), index=False)
 
+pd.DataFrame(all_importances).describe()
 # %%
-for i in range(len(zipped_dict['train'])):
+for i in videos:
     test_function(i)
     
 
-# # %%
-
 # %%
-pd.DataFrame(all_importances).describe()
-# %%
+    
+    

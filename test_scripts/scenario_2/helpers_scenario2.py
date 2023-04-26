@@ -121,34 +121,74 @@ def save_files(x, y, file_path, phys_folder, ann_folder):
     np.save(os.path.join(phys_folder, file_base_name), x)
     np.save(os.path.join(ann_folder, file_base_name), y)
     
+def get_subs_vids(folder_path):
+    subs = set()
+    vids = set()
+
+    for file_name in os.listdir(folder_path):
+        if file_name.endswith('.csv'):
+            match = re.match(r"sub_(\d+)_vid_(\d+).csv", file_name)
+            if match:
+                sub, vid = match.groups()
+                subs.add(int(sub))
+                vids.add(int(vid))
+
+    return sorted(list(subs)), sorted(list(vids))
+
+def load_and_concatenate_train(base_path, vid, split = None):
+    subjects, videos = get_subs_vids(base_path)
+    # select_dict = {"subjects": subjects, "videos": videos}
     
-
+    if split == None:
+        data = []
+        for sub in subjects:
+            file_path = os.path.join(base_path, f"sub_{sub}_vid_{vid}.npy")
+            data = np.load(file_path)
+        return data
     
-def load_and_concatenate_files(base_path, train_test_split, vid ):
-    train_data = []
-    test_data = []
+    else:
+        train_data = []
 
-    for train_test, subs in train_test_split.items():
-        if type(vid) == 'list':
-            for v in vid:
-                for sub in subs:
-                    file_path = os.path.join(base_path, f"sub_{sub}_vid_{v}.npy")
-                    if os.path.exists(file_path):
-                        data = np.load(file_path)
-                        if train_test == "train":
-                            train_data.append(data)
-                        else:
-                            test_data.append(data)
-
-        else:
+        for train_test, subs in split.items():
             for sub in subs:
                 file_path = os.path.join(base_path, f"sub_{sub}_vid_{vid}.npy")
                 if os.path.exists(file_path):
                     data = np.load(file_path)
                     if train_test == "train":
                         train_data.append(data)
-                    else:
-                        test_data.append(data)
+
+        train_data = np.concatenate(train_data) if train_data else None
+
+        return train_data
+    
+def split_subjects_train_test(subjects, splits):
+    """Split subjects into train and test sets.
+
+    Args:
+        subjects (_type_): _description_
+        splits (_type_): _description_
+
+    Returns:
+        splits: list of dictionaries with keys 'train' and 'test' and values as lists of subject numbers.
+    """
+    def partition (list_in, n):
+        random.shuffle(list_in)
+        return [list_in[i::n] for i in range(n)]
+    
+    partitions  = partition(subjects, 3)
+    
+    splits = []
+
+    for i in partitions:
+        train = [x for x in subjects if x not in i]
+        test = i
+        
+        splits.append({'train': train, 'test': test})
+        
+    return splits
+
+
+    
     
 def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', aggregate=None, window = [-1000, 500], partition_window = 1, downsample_window = 10):
     """
@@ -300,7 +340,7 @@ def _fit_and_evaluate(train_index, test_index, X, y, pipeline):
 
 from sklearn.multioutput import MultiOutputRegressor
 
-def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, y_test, model, numeric_column_indices=None,test = True):
+def test_pipeline(X_train, X_test, y_train, y_test, model, numeric_column_indices=None,test = True):
     """
     Perform time series cross-validation with hyperparameters for a given model.
 
@@ -319,7 +359,6 @@ def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, 
     """
 
     numeric_transformer = Pipeline(steps=[
-        ('imputer', SimpleImputer(strategy='median')),
         ('scaler', StandardScaler())
     ])
 
