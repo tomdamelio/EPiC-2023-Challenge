@@ -101,7 +101,7 @@ def create_folder_structure(root_physiology_folder, root_annotations_folder, sav
         phys_folder_test = None
         ann_folder_test = None
 
-    output_folder = os.path.join(save_output_folder, scenario_str, fold_str)
+    output_folder = os.path.join(save_output_folder, scenario_str, fold_str, 'test','annotations')
 
     # Create directories if they don't exist
     for folder in [phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, output_folder]:
@@ -349,23 +349,22 @@ def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, 
     
     pipeline.fit(X_train, y_train)
     y_pred = pipeline.predict(X_test)
+    
+    # Calculate RMSE for each output separately
+    if isinstance(model, Pipeline):
+        model.fit(X_train, y_train)
+        importances_df = pd.DataFrame(model.named_steps['model'].feature_importances_.reshape(1, -1))
+    else:
+        importances = pipeline.named_steps['model'].estimators_[0].feature_importances_
+        importances_df = pd.DataFrame(importances.reshape(1, -1))
 
     if test:
-        return y_pred
+        return y_pred, importances_df
     
-    else:
-        
-        model.fit(X_train, y_train)
-        
-        # Calculate RMSE for each output separately
-        if isinstance(model, Pipeline):
-            importances_df = pd.DataFrame(model.named_steps['random_forest'].feature_importances_.reshape(1, -1))
-        else:
-            importances_df = pd.DataFrame(model.estimators_[0].feature_importances_.reshape(1, -1))
-
+    else:  
         rmse_per_output = mean_squared_error(y_test, y_pred, squared=False, multioutput='raw_values')
 
-        return y_pred, rmse_per_output, importances_df
+        return y_pred, importances_df,  rmse_per_output, 
 
 
 # Define the context manager

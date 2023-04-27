@@ -26,7 +26,7 @@ scenario = 1
 fold = None
 root_physiology_folder = "../../data/preprocessed/cleaned_and_prepro_improved/"
 root_annotations_folder = "../../data/raw/"
-save_output_folder = "../../results/test/scenario_1/annotations/"
+save_output_folder = "../../results/"
 
 phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, output_folder, = create_folder_structure(
     root_physiology_folder, root_annotations_folder, save_output_folder, scenario, fold, test=True)
@@ -62,23 +62,39 @@ def run_experiment(top_features=None):
     zipped_dict_npy = zip_csv_train_test_files(phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, format='.npy')
 
     def test_function(i, top_features=None):
-        X = np.load(zipped_dict_npy['train'][i][0])
-        y = np.load(zipped_dict_npy['train'][i][1])
-        X_df = pd.DataFrame(X, columns=column_names_all)
+        # X = np.load(zipped_dict_npy['train'][i][0])
+        # y = np.load(zipped_dict_npy['train'][i][1])
+
+        
+        X_train = np.load(zipped_dict_npy['train'][i][0])
+        y_train = np.load(zipped_dict_npy['train'][i][1])
+        X_test = np.load(zipped_dict_npy['test'][i][0])
+        y_test = np.load(zipped_dict_npy['test'][i][1])
+        
+
+        
+        X_train_df = pd.DataFrame(X_train, columns=column_names_all)
+        X_test_df = pd.DataFrame(X_test, columns=column_names_all)
+        
 
         if top_features is not None:
-            X_filtered = X_df[top_features.index]
+            X_train_filtered = X_train_df[top_features.index].values
+            X_test_filtered = X_test_df[top_features.index].values
+
         else:
-            X_filtered = X_df
+            X_train_filtered = X_train_df.values
+            X_test_filtered = X_test_df.values
 
-        X_train, X_test, y_train, y_test = train_test_split(X_filtered, y, test_size=0.2, shuffle=False)
+            # X_train, X_test, y_train, y_test = train_test_split(X_filtered, y, test_size=0.2, shuffle=False)
+        
 
-        y_pred, rmse_per_output, importances = time_series_cross_validation_with_hyperparameters(
-            X_train, X_test, y_train, y_test,
-            random_forest, numeric_column_indices=np.array(range(X_train.shape[1])), test=False)
+        y_pred, importances = time_series_cross_validation_with_hyperparameters(
+            X_train_filtered, X_test_filtered, y_train, y_test,
+            random_forest, numeric_column_indices=np.array(range(X_train_filtered.shape[1])), test=True)
 
-        save_test_data(y_pred, output_folder, zipped_dict_npy['train'][i][1], test=False, y_test=y_test)
-        return rmse_per_output, importances
+        if top_features is not None:
+            save_test_data(y_pred, output_folder, zipped_dict_npy['test'][i][1], test=True)
+        return (0,0), importances
 
     num_cpu_cores = multiprocessing.cpu_count()
     all_results = []

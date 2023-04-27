@@ -100,7 +100,7 @@ def create_folder_structure(root_physiology_folder, root_annotations_folder, sav
         phys_folder_test = None
         ann_folder_test = None
 
-    output_folder = os.path.join(save_output_folder, scenario_str, fold_str)
+    output_folder = os.path.join(save_output_folder, scenario_str, fold_str, 'test','annotations')
 
     # Create directories if they don't exist
     for folder in [phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, output_folder]:
