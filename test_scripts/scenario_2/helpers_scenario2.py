@@ -432,3 +432,87 @@ def save_test_data(y_pred, output_folder, y_test_file, test = True, y_test = Non
     
     df.to_csv(os.path.join(output_folder, os.path.basename(y_test_file)), index=False)
     return None
+
+from scipy.signal import butter, filtfilt,cheby1, cheby2, ellip
+
+def low_pass_filter(data, cutoff_frequency, sampling_rate, order, filter_type='butter'):
+    nyquist_freq = 0.5 * sampling_rate
+    normal_cutoff = cutoff_frequency / nyquist_freq
+
+    if filter_type == 'butter':
+        b, a = butter(order, normal_cutoff, btype='low', analog=False)
+    elif filter_type == 'cheby1':
+        ripple = 1  # Adjust this value to change the passband ripple (in dB)
+        b, a = cheby1(order, ripple, normal_cutoff, btype='low', analog=False)
+    elif filter_type == 'cheby2':
+        stopband_attenuation = 40  # Adjust this value to change the stopband attenuation (in dB)
+        b, a = cheby2(order, stopband_attenuation, normal_cutoff, btype='low', analog=False)
+    elif filter_type == 'ellip':
+        ripple = 1  # Adjust this value to change the passband ripple (in dB)
+        stopband_attenuation = 40  # Adjust this value to change the stopband attenuation (in dB)
+        b, a = ellip(order, ripple, stopband_attenuation, normal_cutoff, btype='low', analog=False)
+    else:
+        raise ValueError("Invalid filter_type. Choose from 'butter', 'cheby1', 'cheby2', or 'ellip'.")
+
+    num_columns = data.shape[1]
+    filtered_data = np.empty_like(data)
+
+    for col_idx in range(num_columns):
+        filtered_data[:, col_idx] = filtfilt(b, a, data[:, col_idx])
+
+    return filtered_data
+
+def moving_average(data, window_size):
+    num_columns = data.shape[1]
+    num_rows = data.shape[0]
+    filtered_data = np.empty_like(data)
+
+    for col_idx in range(num_columns):
+        cumsum = np.cumsum(data[:, col_idx])
+        cumsum[window_size:] = cumsum[window_size:] - cumsum[:-window_size]
+        filtered_data[window_size - 1:, col_idx] = cumsum[window_size - 1:] / window_size
+
+        # Handle the edge cases for the first window_size points
+        for i in range(window_size - 1):
+            filtered_data[i, col_idx] = cumsum[i] / (i + 1)
+
+    return filtered_data
+
+from scipy.signal import medfilt
+
+def median_filter(data, window_size):
+    num_columns = data.shape[1]
+    filtered_data = np.empty_like(data)
+
+    for col_idx in range(num_columns):
+        padded_data = np.pad(data[:, col_idx], (window_size // 2, window_size // 2), mode='reflect')
+        filtered_data[:, col_idx] = medfilt(padded_data, window_size)[window_size // 2: -(window_size // 2)]
+
+    return filtered_data
+
+from scipy.signal import savgol_filter
+def savitzky_golay_multi_output(data, window_size, polynomial_order = 4):
+    num_columns = data.shape[1]
+    filtered_data = np.empty_like(data)
+
+    for col_idx in range(num_columns):
+        filtered_data[:, col_idx] = savgol_filter(
+            data[:, col_idx],
+            window_size,
+            polynomial_order,
+            mode='mirror'  # Reflect the input signal at the edges
+        )
+
+    return filtered_data
+
+import numpy as np
+from scipy.ndimage import gaussian_filter
+
+def gaussian_filter_multi_output(data, sigma):
+    num_columns = data.shape[1]
+    filtered_data = np.empty_like(data)
+
+    for col_idx in range(num_columns):
+        filtered_data[:, col_idx] = gaussian_filter(data[:, col_idx], sigma, mode='reflect')
+
+    return filtered_data

@@ -15,6 +15,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+from sklearn.svm import SVR
 from sklearn.neighbors import KNeighborsRegressor
 from joblib import Parallel, delayed
 from sklearn.ensemble import RandomForestRegressor
@@ -67,10 +68,10 @@ def process_files(annotation_file, physiology_file,):
 
 #%%
 
-knn = KNeighborsRegressor(n_neighbors=5)
+knn = KNeighborsRegressor(n_neighbors=3)
 knn_pipeline = Pipeline([
     ('scaler', StandardScaler()),
-    ('pca', PCA(n_components=2)),
+    ('pca', PCA(n_components=3)),
     ('knn', MultiOutputRegressor(knn))
 ])
 
@@ -82,60 +83,53 @@ random_forest = RandomForestRegressor(
     max_depth=None, 
     min_samples_split=5, 
     min_samples_leaf=1, 
+    random_state = 42,
+    n_jobs = -1
     # max_features='auto'
 )
 
 rf_pipeline = Pipeline([
     ('scaler', StandardScaler()),
-    ('pca', PCA(n_components=2)),
+    ('pca', PCA(n_components=10)),
     ('rf', MultiOutputRegressor(random_forest))
 ])
 
-
 def test_function(sub, rf_pipeline):
     X_train  = load_and_concatenate_train(phys_folder_train, sub =sub, split=splits[1])
-    y_train = load_and_concatenate_train(phys_folder_train, sub =sub, split=splits[1])
+    y_train = load_and_concatenate_train(ann_folder_train, sub =sub, split=splits[1])
     
-    print(sub)
+    # knn_pipeline.fit(X_train, y_train)
+    # knn_output_train = low_pass_filter(knn_pipeline.predict(X_train), 2,20,3)
+    # # knn_output_train = median_filter(knn_output_train, 25)
+    # X_train_knn = np.column_stack(( X_train, knn_output_train,))
+    
+    
     rf_pipeline.fit(X_train, y_train)
     
     rmse_subject = []
     importances_subject = []
     for vid in splits[1]['test']:
         X_test = np.load(os.path.join(phys_folder_train, f"sub_{sub}_vid_{vid}.npy"))
-        y_test = np.load(os.path.join(phys_folder_train, f"sub_{sub}_vid_{vid}.npy"))
+        y_test = np.load(os.path.join(ann_folder_train, f"sub_{sub}_vid_{vid}.npy"))
         
-        print(sub, vid)
+
         y_pred = rf_pipeline.predict(X_test)
         
-        importances = rf_pipeline.named_steps['rf'].estimators_[0].feature_importances_
-        rmse_per_output = mean_squared_error(y_test, y_pred, squared=False, multioutput='raw_values')
-        
-        path_csv_test =  os.path.join(ann_folder_test, f"sub_{sub}_vid_{vid}.csv")
+        y_pred_filtered = gaussian_filter_multi_output(y_pred, 20)
+        y_pred_filtered = low_pass_filter(y_pred_filtered, 1, 20,6)
 
-        save_test_data(y_pred, output_folder, path_csv_test, test = False, y_test = y_test)
+        
+        importances = rf_pipeline.named_steps['rf'].estimators_[0].feature_importances_
+        rmse_per_output = mean_squared_error(y_test, y_pred_filtered, squared=False, multioutput='raw_values')
+        
+        path_csv_test =  os.path.join(ann_folder_train, f"sub_{sub}_vid_{vid}.csv")
+
+        save_test_data(y_pred_filtered, output_folder, path_csv_test, test = False, y_test = y_test)
         
         rmse_subject.append(rmse_per_output)
         importances_subject.append(importances)
     
     return np.mean(rmse_subject, axis = 0), np.mean(importances_subject, axis=0)
-        
-        
-    
-    
-    # knn_pipeline.fit(X_train, y_train)
-    # knn_output_train = knn_pipeline.predict(X_train)
-    # knn_output_test = knn_pipeline.predict(X_test)
-
-    # X_train_knn = np.column_stack((knn_output_train, X_train))
-    # X_test_knn = np.column_stack(( knn_output_test, X_test))
-    
-    # print(rmse_per_output)
-    save_test_data(y_pred, output_folder, subject, test = False, y_test = y_test)    
-    return rmse_per_output, importances
-
-    save_test_data(y_pred, output_folder, zipped_dict_npy['test'][i][1])
-
 
 #%%
 num_cpu_cores = multiprocessing.cpu_count()
@@ -144,22 +138,25 @@ all_importances = []
 with parallel_backend('multiprocessing', n_jobs=  num_cpu_cores - 5):
     with tqdm_joblib(tqdm(total=len(subjects), desc="Files", leave=False)) as progress_bar:
         results = Parallel()(
-            (delayed(test_function)(i) for i in subjects))
+            (delayed(test_function)(i, rf_pipeline) for i in subjects))
         
     # Combine results for all subjects
-    for i in subjects:
+    for i in range(len(subjects)):
         all_results.append(results[i][0])
         all_importances.append(results[i][1])
 
 df_results = pd.DataFrame(all_results, columns=['arousal', 'valence'])
 df_results.to_csv(os.path.join('../../results/scenario_3', 'results_rf.csv'), index=False)
-
+#%%
+display(df_results.describe())
 pd.DataFrame(all_importances).describe()
 # %%
-for i in subjects:
-    test_function(i, rf_pipeline)
+for i in subjects[:1]:
+    a = test_function(i, rf_pipeline)
+    
+
     
 
 # %%
-    
-    
+print(a[0])
+# %%
