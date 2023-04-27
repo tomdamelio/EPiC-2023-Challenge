@@ -114,8 +114,8 @@ def create_folder_structure(root_physiology_folder, root_annotations_folder, sav
 
 
 def save_files(x, y, file_path, phys_folder, ann_folder):
-    subject_num, video_num = map(int, file_path.split('/')[-1].replace('.csv', '').split('_')[1::2])
-    
+    file_name = os.path.basename(file_path).replace('.csv', '')
+    subject_num, video_num = map(int, file_name.split('_')[1::2])    
     file_base_name = f'sub_{subject_num}_vid_{video_num}'
     
     np.save(os.path.join(phys_folder, file_base_name), x)
