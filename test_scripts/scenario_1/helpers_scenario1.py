@@ -115,7 +115,7 @@ def create_folder_structure(root_physiology_folder, root_annotations_folder, sav
 
 
 def save_files(x, y, file_path, phys_folder, ann_folder):
-    subject_num, video_num = map(int, file_path.split('/')[-1].replace('.csv', '').split('_')[1::2])
+    subject_num, video_num = map(int, file_path.split(os.path.sep)[-1].replace('.csv', '').split('_')[1::2])
     
     file_base_name = f'sub_{subject_num}_vid_{video_num}'
     
@@ -354,11 +354,18 @@ def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, 
         return y_pred
     
     else:
+        
+        model.fit(X_train, y_train)
+        
         # Calculate RMSE for each output separately
-        importances = pipeline.named_steps['model'].estimators_[0].feature_importances_
+        if isinstance(model, Pipeline):
+            importances_df = pd.DataFrame(model.named_steps['random_forest'].feature_importances_.reshape(1, -1))
+        else:
+            importances_df = pd.DataFrame(model.estimators_[0].feature_importances_.reshape(1, -1))
+
         rmse_per_output = mean_squared_error(y_test, y_pred, squared=False, multioutput='raw_values')
 
-        return y_pred, rmse_per_output, importances
+        return y_pred, rmse_per_output, importances_df
 
 
 # Define the context manager
