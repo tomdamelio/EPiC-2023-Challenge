@@ -64,8 +64,6 @@ for fold in folds:
     #                 (delayed(process_files)(ann_file, phys_file) for phys_file, ann_file in zipped_dict[key])
     #             )
 
-
-    #%%
     # Define models and hyperparameters
     xgb = XGBRegressor(
         n_estimators=50, 
@@ -75,9 +73,37 @@ for fold in folds:
 
     xgb_pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('pca', PCA(n_components=10)),
         ('xgb', MultiOutputRegressor(xgb))
     ])
+    
+    num_cpu_cores = multiprocessing.cpu_count()
+
+    def evaluate_features(vid):
+        X_train  = load_and_concatenate_train(phys_folder_train, vid =vid,)
+        y_train = load_and_concatenate_train(ann_folder_train, vid =vid,)
+        
+        xgb_pipeline.fit(X_train, y_train)
+        importances = xgb_pipeline.named_steps['xgb'].estimators_[0].feature_importances_
+        
+        return importances
+
+    all_importances = []
+    with parallel_backend('loky', n_jobs=  num_cpu_cores - 5):
+        with tqdm_joblib(tqdm(total=len(videos), desc="Files", leave=False)) as progress_bar:
+            results = Parallel()(
+                (delayed(evaluate_features)(i) for i in videos))
+            
+        # Combine results for all subjects
+        for i in range(len(videos)):
+            all_importances.append(results[i])
+
+    df_importances = pd.DataFrame(all_importances)
+
+    # Take mean of importances (for every column)
+    mean_importances = df_importances.mean(axis=0)
+
+    # Select the indices of the best columns (highest mean)
+    best_indices = mean_importances.nlargest(36).index
 
 
 

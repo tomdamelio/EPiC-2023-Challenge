@@ -26,7 +26,7 @@ from helpers_scenario3 import *
 #%%config
 scenario = 3
 folds = [0,1,2,3]
-for fold in folds[2:]:
+for fold in folds:
     root_physiology_folder = "../../data/preprocessed/cleaned_and_prepro_improved/"
     root_annotations_folder = "../../data/raw/"
     save_output_folder = "../../results/"
@@ -56,72 +56,89 @@ for fold in folds[2:]:
 
 
     # # # Process the files using the context manager
-    for key in zipped_dict.keys():
-        with parallel_backend('multiprocessing', n_jobs= multiprocessing.cpu_count()//2):
-            with tqdm_joblib(tqdm(total=len(zipped_dict[key]), desc=f"{key} files", leave=False)) as progress_bar:
-                results = Parallel()(
-                    (delayed(process_files)(ann_file, phys_file) for phys_file, ann_file in zipped_dict['test'])
-                )
+    # for key in zipped_dict.keys():
+    #     with parallel_backend('multiprocessing', n_jobs= multiprocessing.cpu_count()//2):
+    #         with tqdm_joblib(tqdm(total=len(zipped_dict[key]), desc=f"{key} files", leave=False)) as progress_bar:
+    #             results = Parallel()(
+    #                 (delayed(process_files)(ann_file, phys_file) for phys_file, ann_file in zipped_dict['test'])
+    #             )
 
-#%%
+    # Define models and hyperparameters
+    random_forest = RandomForestRegressor(
+        n_estimators=100, 
+        max_depth=None, 
+        min_samples_split=5, 
+        min_samples_leaf=1, 
+        random_state = 42,
+        n_jobs = -1
+        # max_features='auto'
+    )
 
-knn = KNeighborsRegressor(n_neighbors=3)
-knn_pipeline = Pipeline([
-    ('scaler', StandardScaler()),
-    ('pca', PCA(n_components=3)),
-    ('knn', MultiOutputRegressor(knn))
-])
-
-
-# Define models and hyperparameters
-random_forest = RandomForestRegressor(
-    n_estimators=100, 
-    max_depth=None, 
-    min_samples_split=5, 
-    min_samples_leaf=1, 
-    random_state = 42,
-    n_jobs = -1
-    # max_features='auto'
-)
-
-rf_pipeline = Pipeline([
-    ('imputer', SimpleImputer(strategy='median')),
-    ('scaler', StandardScaler()),
-    ('pca', PCA(n_components=10)),
-    ('rf', MultiOutputRegressor(random_forest))
-])
-
-def test_function(sub, rf_pipeline):
-    X_train  = load_and_concatenate_train(phys_folder_train, sub =sub,)
-    y_train = load_and_concatenate_train(ann_folder_train, sub =sub,)
+    rf_pipeline = Pipeline([
+        ('imputer', SimpleImputer(strategy='median')),
+        ('scaler', StandardScaler()),
+        ('rf', MultiOutputRegressor(random_forest))
+    ])
     
-    rf_pipeline.fit(X_train, y_train)
-    
+    num_cpu_cores = multiprocessing.cpu_count()
 
-    for vid in videos_test:
-        X_test = np.load(os.path.join(phys_folder_test, f"sub_{sub}_vid_{vid}.npy"))
-        y_test = np.load(os.path.join(ann_folder_test, f"sub_{sub}_vid_{vid}.npy"))
-
-        y_pred = rf_pipeline.predict(X_test)
+    def evaluate_features(sub):
+        X_train  = load_and_concatenate_train(phys_folder_train, sub =sub,)
+        y_train = load_and_concatenate_train(ann_folder_train, sub =sub)
         
-        y_pred_filtered = gaussian_filter_multi_output(y_pred, 60)
-        y_pred_filtered = low_pass_filter(y_pred_filtered, 1, 20,6)
-
+        rf_pipeline.fit(X_train, y_train)
+        importances = rf_pipeline.named_steps['rf'].estimators_[0].feature_importances_
         
-        path_csv_test =  os.path.join(ann_folder_test, f"sub_{sub}_vid_{vid}.csv")
+        return importances
 
-        save_test_data(y_pred_filtered, output_folder, path_csv_test, test = True)
+    all_importances = []
+    with parallel_backend('loky', n_jobs=  num_cpu_cores - 5):
+        with tqdm_joblib(tqdm(total=len(subjects), desc="Files", leave=False)) as progress_bar:
+            results = Parallel()(
+                (delayed(evaluate_features)(i) for i in subjects))
+            
+        # Combine results for all subjects
+        for i in range(len(subjects)):
+            all_importances.append(results[i])
+
+    df_importances = pd.DataFrame(all_importances)
+
+    # Take mean of importances (for every column)
+    mean_importances = df_importances.mean(axis=0)
+
+    # Select the indices of the best columns (highest mean)
+    best_indices = mean_importances.nlargest(36).index
+
+    def test_function(sub, rf_pipeline):
+        X_train  = load_and_concatenate_train(phys_folder_train, sub =sub,)
+        y_train = load_and_concatenate_train(ann_folder_train, sub =sub,)
         
-    return None
+        rf_pipeline.fit(X_train, y_train)
+        
 
-#%%
-num_cpu_cores = multiprocessing.cpu_count()
-all_results = []
-all_importances = []
-with parallel_backend('multiprocessing', n_jobs=  num_cpu_cores - 5):
-    with tqdm_joblib(tqdm(total=len(subjects), desc="Files", leave=False)) as progress_bar:
-        results = Parallel()(
-            (delayed(test_function)(i, rf_pipeline) for i in subjects))
+        for vid in videos_test:
+            X_test = np.load(os.path.join(phys_folder_test, f"sub_{sub}_vid_{vid}.npy"))
+            y_test = np.load(os.path.join(ann_folder_test, f"sub_{sub}_vid_{vid}.npy"))
+
+            y_pred = rf_pipeline.predict(X_test)
+            
+            y_pred_filtered = gaussian_filter_multi_output(y_pred, 60)
+            y_pred_filtered = low_pass_filter(y_pred_filtered, 1, 20,6)
+
+            
+            path_csv_test =  os.path.join(ann_folder_test, f"sub_{sub}_vid_{vid}.csv")
+
+            save_test_data(y_pred_filtered, output_folder, path_csv_test, test = True)
+            
+        return None
+
+    num_cpu_cores = multiprocessing.cpu_count()
+    all_results = []
+    all_importances = []
+    with parallel_backend('multiprocessing', n_jobs=  num_cpu_cores - 5):
+        with tqdm_joblib(tqdm(total=len(subjects), desc="Files", leave=False)) as progress_bar:
+            results = Parallel()(
+                (delayed(test_function)(i, rf_pipeline) for i in subjects))
         
 # %%
 for i in subjects:

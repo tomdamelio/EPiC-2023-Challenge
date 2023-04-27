@@ -64,15 +64,6 @@ for fold in folds:
     #             )
 
 
-
-    knn = KNeighborsRegressor(n_neighbors=3)
-    knn_pipeline = Pipeline([
-        ('scaler', StandardScaler()),
-        ('pca', PCA(n_components=3)),
-        ('knn', MultiOutputRegressor(knn))
-    ])
-
-
     # Define models and hyperparameters
     random_forest = RandomForestRegressor(
         n_estimators=100, 
@@ -86,9 +77,37 @@ for fold in folds:
 
     rf_pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('pca', PCA(n_components=10)),
         ('rf', MultiOutputRegressor(random_forest))
     ])
+    
+    num_cpu_cores = multiprocessing.cpu_count()
+
+    def evaluate_features(sub):
+        X_train  = load_and_concatenate_train(phys_folder_train, sub =sub,)
+        y_train = load_and_concatenate_train(ann_folder_train, sub =sub)
+        
+        rf_pipeline.fit(X_train, y_train)
+        importances = rf_pipeline.named_steps['rf'].estimators_[0].feature_importances_
+        
+        return importances
+
+    all_importances = []
+    with parallel_backend('loky', n_jobs=  num_cpu_cores - 5):
+        with tqdm_joblib(tqdm(total=len(subjects), desc="Files", leave=False)) as progress_bar:
+            results = Parallel()(
+                (delayed(evaluate_features)(i) for i in subjects))
+            
+        # Combine results for all subjects
+        for i in range(len(subjects)):
+            all_importances.append(results[i])
+
+    df_importances = pd.DataFrame(all_importances)
+
+    # Take mean of importances (for every column)
+    mean_importances = df_importances.mean(axis=0)
+
+    # Select the indices of the best columns (highest mean)
+    best_indices = mean_importances.nlargest(36).index
 
     def test_function(sub, rf_pipeline):
         X_train  = load_and_concatenate_train(phys_folder_train, sub =sub,)
@@ -112,8 +131,7 @@ for fold in folds:
             save_test_data(y_pred_filtered, output_folder, path_csv_test, test = True)
             
         return None
-
-    #%%
+    
     num_cpu_cores = multiprocessing.cpu_count()
     all_results = []
     all_importances = []
@@ -121,3 +139,5 @@ for fold in folds:
         with tqdm_joblib(tqdm(total=len(subjects), desc="Files", leave=False)) as progress_bar:
             results = Parallel()(
                 (delayed(test_function)(i, rf_pipeline) for i in subjects))
+
+# %%
