@@ -1,4 +1,6 @@
-Preprocess and clean data:
-https://drive.google.com/drive/folders/1oB-45Nwri-EpeP4k57LrDkPbneBxAubu?usp=sharing
+# Emotion Physiology and Experience Collaboration (EPiC) Shared Task Repository
+This repository contains the work done as part of the Emotion Physiology and Experience Collaboration (EPiC) shared task competition.
+The goal of the competition is to develop models and methods for understanding and predicting moment-to-moment ratings of emotion using measures of physiology.
 
-Raw files pass: @50n.HeiD,.=%L28+3QsEWjp
+Repository Structure
+./data: This folder contains the final predictions for each of the four scenarios proposed in the challenge.
