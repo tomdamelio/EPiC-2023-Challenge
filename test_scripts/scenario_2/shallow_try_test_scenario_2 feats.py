@@ -26,7 +26,7 @@ from helpers_scenario2 import *
 
 scenario = 2
 folds = [0,1,2,3,4]
-for fold in folds[3:]:
+for fold in folds:
     print(fold)
     root_physiology_folder = "../../data/preprocessed/cleaned_and_prepro_improved/"
     root_annotations_folder = "../../data/raw/"
@@ -60,7 +60,7 @@ for fold in folds[3:]:
 
     # # Process the files using the context manager
     # for key in zipped_dict.keys():
-    #     with parallel_backend('multiprocessing', n_jobs= multiprocessing.cpu_count()//2):
+    #     with parallel_backend('loky', n_jobs= multiprocessing.cpu_count()//2):
     #         with tqdm_joblib(tqdm(total=len(zipped_dict[key]), desc=f"{key} files", leave=False)) as progress_bar:
     #             results = Parallel()(
     #                 (delayed(process_files)(ann_file, phys_file) for phys_file, ann_file in zipped_dict[key])
@@ -77,13 +77,20 @@ xgb = XGBRegressor(
 
 xgb_pipeline = Pipeline([
     ('scaler', StandardScaler()),
-    ('pca', PCA(n_components=10)),
+#    ('pca', PCA(n_components=10)),
     ('xgb', MultiOutputRegressor(xgb))
 ])
 
+# knn = KNeighborsRegressor(n_neighbors=3)
+# knn_pipeline = Pipeline([
+#     ('scaler', StandardScaler()),
+#     ('pca', PCA(n_components=3)),
+#     ('knn', MultiOutputRegressor(knn))
+# ])
 
 
 num_cpu_cores = multiprocessing.cpu_count()
+
 def evaluate_features(vid):
     X_train  = load_and_concatenate_train(phys_folder_train, vid =vid, split=splits[1])
     y_train = load_and_concatenate_train(ann_folder_train, vid =vid, split=splits[1])
@@ -94,44 +101,49 @@ def evaluate_features(vid):
     return importances
 
 all_importances = []
-with parallel_backend('multiprocessing', n_jobs=  num_cpu_cores - 5):
+with parallel_backend('loky', n_jobs=  num_cpu_cores - 5):
     with tqdm_joblib(tqdm(total=len(videos), desc="Files", leave=False)) as progress_bar:
         results = Parallel()(
-            (delayed(test_function)(i) for i in videos))
+            (delayed(evaluate_features)(i) for i in videos))
         
     # Combine results for all subjects
     for i in range(len(videos)):
-        all_importances.append(results[i][1])
+        all_importances.append(results[i])
 
 df_importances = pd.DataFrame(all_importances)
 
-### Promediar importancias
-### Top 10 o lo que sea
-### Obtener numero de mejores columnas
+# Take mean of importances (for every column)
+mean_importances = df_importances.mean(axis=0)
 
-### Trimear en test function por esas columnas X_train y X_test
+# Select the indices of the best columns (highest mean)
+best_indices = mean_importances.nlargest(36).index
+
 
 #%%
-
-
-
 
 def test_function(vid):
     X_train  = load_and_concatenate_train(phys_folder_train, vid =vid, split=splits[1])
     y_train = load_and_concatenate_train(ann_folder_train, vid =vid, split=splits[1])
+    # knn_pipeline.fit(X_train, y_train)
+    # knn_output_train = knn_pipeline.predict(X_train)
+    # X_train_knn = np.column_stack((knn_output_train, X_train))
+    
+    # Subset the columns of X_train and X_test with those indices (best columns)
+    X_train = X_train[:, best_indices]
     
     xgb_pipeline.fit(X_train, y_train)
-    importances = xgb_pipeline.named_steps['xgb'].estimators_[0].feature_importances_
     
-
-    ##### INSERT FEAT SELECTION HERE #####
+    importances = xgb_pipeline.named_steps['xgb'].estimators_[0].feature_importances_
     
     rmse_subject = []
     importances_subject = []
     for sub in splits[1]['test']:
         X_test = np.load(os.path.join(phys_folder_train, f"sub_{sub}_vid_{vid}.npy"))
         y_test = np.load(os.path.join(ann_folder_train, f"sub_{sub}_vid_{vid}.npy"))
+        # knn_output_test = knn_pipeline.predict(X_test)
+        # X_test_knn = np.column_stack((y_test, X_test))
         
+        X_test = X_test[:, best_indices]
         y_pred = xgb_pipeline.predict(X_test)
         y_pred_filtered = gaussian_filter_multi_output(y_pred, 80)
         y_pred_filtered = low_pass_filter(y_pred_filtered, 2, 20,6)
@@ -147,28 +159,18 @@ def test_function(vid):
         importances_subject.append(importances)
     
     return np.mean(rmse_subject, axis = 0), np.mean(importances_subject, axis=0)
-        
-        
-    
-    
-    # knn_pipeline.fit(X_train, y_train)
-    # knn_output_train = knn_pipeline.predict(X_train)
-    # knn_output_test = knn_pipeline.predict(X_test)
-
-    # X_train_knn = np.column_stack((knn_output_train, X_train))
-    # X_test_knn = np.column_stack(( knn_output_test, X_test))
     
     # print(rmse_per_output)
-    save_test_data(y_pred, output_folder, subject, test = False, y_test = y_test)    
-    return rmse_per_output, importances
-
-    save_test_data(y_pred, output_folder, zipped_dict_npy['test'][i][1])
+    #save_test_data(y_pred, output_folder, subject, test = False, y_test = y_test)    
+    #return rmse_per_output, importances
+#
+    #save_test_data(y_pred, output_folder, zipped_dict_npy['test'][i][1])
 
 
 #%%
 all_results = []
 all_importances = []
-with parallel_backend('multiprocessing', n_jobs=  num_cpu_cores - 5):
+with parallel_backend('loky', n_jobs=  num_cpu_cores - 5):
     with tqdm_joblib(tqdm(total=len(videos), desc="Files", leave=False)) as progress_bar:
         results = Parallel()(
             (delayed(test_function)(i) for i in videos))
@@ -181,11 +183,16 @@ with parallel_backend('multiprocessing', n_jobs=  num_cpu_cores - 5):
 df_results = pd.DataFrame(all_results, columns=['arousal', 'valence'])
 df_results.to_csv(os.path.join('../../results/scenario_2', 'results_xgb_pca_filter.csv'), index=False)
 
-display(df_results.describe())
-pd.DataFrame(all_importances).describe()
-# %%
-for i in videos:
-    test_function(i, xgb_pipeline)
+#%%
+df_results.mean(axis=0)
+
+
+#%%
+#display(df_results.describe())
+#pd.DataFrame(all_importances).describe()
+## %%
+#for i in videos:
+#    test_function(i, xgb_pipeline)
     
 
 # %%
