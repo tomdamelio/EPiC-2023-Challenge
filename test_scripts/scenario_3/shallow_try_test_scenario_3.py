@@ -25,46 +25,46 @@ from helpers_scenario3 import *
 
 #%%config
 scenario = 3
-fold = 0
-root_physiology_folder = "../../data/preprocessed/cleaned_and_prepro_improved/"
-root_annotations_folder = "../../data/raw/"
-# save_output_folder = "../../test/annotations/"
-save_output_folder = "../../results/test/"
+folds = [0,1,2,3]
+for fold in folds:
+    root_physiology_folder = "../../data/preprocessed/cleaned_and_prepro_improved/"
+    root_annotations_folder = "../../data/raw/"
+    # save_output_folder = "../../test/annotations/"
+    save_output_folder = "../../results/test/"
 
 
-phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, output_folder, = create_folder_structure(
-    root_physiology_folder, root_annotations_folder, save_output_folder, scenario, fold, test=True)
+    phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, output_folder, = create_folder_structure(
+        root_physiology_folder, root_annotations_folder, save_output_folder, scenario, fold, test=True)
 
 
-zipped_dict = zip_csv_train_test_files(phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, format = '.csv')
-# print(len(zipped_dict['train']))
+    zipped_dict = zip_csv_train_test_files(phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, format = '.csv')
+    # print(len(zipped_dict['train']))
 
-subjects, videos = get_subs_vids(phys_folder_train)
-cat_dict = {1: [16, 20], 2: [0, 3], 3: [10, 22], 4: [4, 21]}
+    subjects, videos = get_subs_vids(phys_folder_train)
+    cat_dict = {1: [16, 20], 2: [0, 3], 3: [10, 22], 4: [4, 21]}
 
-splits = split_categories_videos_train_test(videos, categories = [2,3,4], cat_dict = cat_dict,splits =3)
+    splits = split_categories_videos_train_test(videos, categories = [2,3,4], cat_dict = cat_dict,splits =3)
 
-#%%
-def process_files(annotation_file, physiology_file,):
-    df_annotations = pd.read_csv(annotation_file)
-    df_physiology = pd.read_csv(physiology_file)
-    
-    # print(physiology_file)
-    X, y = preprocess(df_physiology, df_annotations,  predictions_cols=['arousal','valence'], aggregate=['mean','min'], window=[-5000, 5000], partition_window = 3)
-    # print(X.shape, y.shape)
-    
-    save_files(X, y, annotation_file, os.path.dirname(physiology_file), os.path.dirname(annotation_file))
-    
-    return None
+    def process_files(annotation_file, physiology_file,):
+        df_annotations = pd.read_csv(annotation_file)
+        df_physiology = pd.read_csv(physiology_file)
+        
+        # print(physiology_file)
+        X, y = preprocess(df_physiology, df_annotations,  predictions_cols=['arousal','valence'], aggregate=['mean','min'], window=[-5000, 5000], partition_window = 3)
+        # print(X.shape, y.shape)
+        
+        save_files(X, y, annotation_file, os.path.dirname(physiology_file), os.path.dirname(annotation_file))
+        
+        return None
 
 
-# # Process the files using the context manager
-# for key in zipped_dict.keys():
-#     with parallel_backend('multiprocessing', n_jobs= multiprocessing.cpu_count()//2):
-#         with tqdm_joblib(tqdm(total=len(zipped_dict[key]), desc=f"{key} files", leave=False)) as progress_bar:
-#             results = Parallel()(
-#                 (delayed(process_files)(ann_file, phys_file) for phys_file, ann_file in zipped_dict[key])
-#             )
+    # # Process the files using the context manager
+    for key in zipped_dict.keys():
+        with parallel_backend('multiprocessing', n_jobs= multiprocessing.cpu_count()//2):
+            with tqdm_joblib(tqdm(total=len(zipped_dict[key]), desc=f"{key} files", leave=False)) as progress_bar:
+                results = Parallel()(
+                    (delayed(process_files)(ann_file, phys_file) for phys_file, ann_file in zipped_dict[key])
+                )
 
 #%%
 
