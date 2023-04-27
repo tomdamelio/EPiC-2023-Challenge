@@ -91,7 +91,7 @@ def load_and_concatenate_files(base_path, train_test_split, vid ):
     test_data = []
 
     for train_test, subs in train_test_split.items():
-        if type(vid) == 'list':
+        if isinstance(vid, list):  # Corrected line
             for v in vid:
                 for sub in subs:
                     file_path = os.path.join(base_path, f"sub_{sub}_vid_{v}.npy")
@@ -111,11 +111,33 @@ def load_and_concatenate_files(base_path, train_test_split, vid ):
                         train_data.append(data)
                     else:
                         test_data.append(data)
+    if train_data:
+        num_dimensions = train_data[0].ndim
+        if num_dimensions == 2:
+            train_data = np.concatenate(train_data)
+        elif num_dimensions == 3:
+            train_data = np.concatenate(train_data, axis=1)
 
-    train_data = np.concatenate(train_data) if train_data else None
-    test_data = np.concatenate(test_data) if test_data else None
+        else:
+            print("Incorrect number of dimensions in train data")
+            train_data = None
+    else:
+        train_data = None
+
+    if test_data:
+        num_dimensions = test_data[0].ndim
+        if num_dimensions == 2:
+            test_data = np.concatenate(test_data)
+        elif num_dimensions == 3:
+            test_data = np.concatenate(test_data, axis=1)
+        else:
+            print("Incorrect number of dimensions in test data")
+            test_data = None
+    else:
+        test_data = None
 
     return train_data, test_data
+
     
     
 def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', aggregate=None, window = [-1000, 500], partition_window = 1, downsample_window = 10):
@@ -281,6 +303,31 @@ def split_subjects_train_test(subjects, splits):
         
     return splits
 
+import random
+
+def split_subjects_train_test_final_model(subjects):
+    """Split subjects into train and test sets.
+
+    Args:
+        subjects (list): List of subject numbers.
+
+    Returns:
+        split: A dictionary with keys 'train' and 'test' and values as lists of subject numbers.
+    """
+    # Shuffle the subjects list
+    random.shuffle(subjects)
+
+    # Calculate the index for splitting
+    split_idx = int(len(subjects) * 0.7)
+
+    # Split the subjects list into train and test
+    train = subjects[:split_idx]
+    test = subjects[split_idx:]
+
+    # Create the split dictionary
+    split = {'train': train, 'test': test}
+
+    return split
 
 def _fit_and_evaluate(X_train, X_test, y_train, y_test, pipeline):
     pipeline.fit(X_train, y_train)
