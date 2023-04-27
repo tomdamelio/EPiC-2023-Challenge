@@ -26,7 +26,7 @@ from helpers_scenario3 import *
 #%%config
 scenario = 3
 folds = [0,1,2,3]
-for fold in folds:
+for fold in folds[1:]:
     root_physiology_folder = "../../data/preprocessed/cleaned_and_prepro_improved/"
     root_annotations_folder = "../../data/raw/"
     # save_output_folder = "../../test/annotations/"
