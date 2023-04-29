@@ -59,12 +59,9 @@ def process_files(annotation_file, physiology_file,):
 #                 (delayed(process_files)(ann_file, phys_file) for phys_file, ann_file in zipped_dict[key])
 #             )
 
-#%%
-# knn_pipeline = Pipeline([
-#     ('scaler', StandardScaler()),
-#     ('pca', PCA(n_components=2)),
-#     ('knn', KNeighborsRegressor(n_neighbors=5))
-# ])
+
+
+
 
 
 # Define models and hyperparameters
