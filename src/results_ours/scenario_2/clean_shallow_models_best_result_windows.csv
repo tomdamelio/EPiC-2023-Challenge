@@ -1,3 +1,0 @@
-model,hyperparameters,aggregate,average_rmse_arousal,average_rmse_valence,window
-KNeighborsRegressor,"{'n_neighbors': 10, 'weights': 'uniform', 'algorithm': 'auto'}","['mean', 'std', 'max', 'min']",2.1261921711600325,2.4209604249464305,500
-KNeighborsRegressor,"{'n_neighbors': 10, 'weights': 'uniform', 'algorithm': 'auto'}","['mean', 'std', 'max', 'min']",2.1261921711600325,2.4209604249464305,500
