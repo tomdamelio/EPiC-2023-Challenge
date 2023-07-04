@@ -60,7 +60,7 @@ for fold in folds:
         with parallel_backend('loky', n_jobs= multiprocessing.cpu_count()//2):
             with tqdm_joblib(tqdm(total=len(zipped_dict[key]), desc=f"{key} files", leave=False)) as progress_bar:
                 results = Parallel()(
-                    (delayed(process_files)(ann_file, phys_file) for phys_file, ann_file in zipped_dict['test'])
+                    (delayed(process_files)(ann_file, phys_file) for phys_file, ann_file in zipped_dict[key])
                 )
 
     # Define models and hyperparameters
@@ -115,7 +115,6 @@ for fold in folds:
         
         rf_pipeline.fit(X_train, y_train)
         
-
         for vid in videos_test:
             X_test = np.load(os.path.join(phys_folder_test, f"sub_{sub}_vid_{vid}.npy"))
             y_test = np.load(os.path.join(ann_folder_test, f"sub_{sub}_vid_{vid}.npy"))
@@ -144,3 +143,4 @@ for fold in folds:
 for i in subjects:
     print(i)
     a = test_function(i, rf_pipeline)
+# %%
