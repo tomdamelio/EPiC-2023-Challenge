@@ -37,9 +37,4 @@ data/
 # Models
 results/models/
 
-# Logs
-results/logs/
-
-# Figures
-results/figures/
 
