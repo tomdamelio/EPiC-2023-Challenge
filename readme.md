@@ -68,4 +68,4 @@ By following these steps, you should be able to correctly run all the scripts an
 
 ## Contact
 
-For any additional information or queries, feel free to contact the authors.
+For any additional information or queries, feel free to contact me by email: dameliotomas@gmail.com
