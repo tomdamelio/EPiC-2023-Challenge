@@ -5,6 +5,7 @@ __pycache__/
 *.pyd
 *.pyc
 *.log
+*.png
 
 # Jupyter Notebook
 .ipynb_checkpoints/
