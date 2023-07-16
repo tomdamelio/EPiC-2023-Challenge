@@ -14,7 +14,7 @@ def calculate_metrics(y_test, y_pred):
     r2 = r2_score(y_test, y_pred)
     return rmse, mae, r2
 
-def plot_true_vs_predicted(file_name, time_test, y_test, y_pred, title):
+def plot_true_vs_predicted(file_name, fold, time_test, y_test, y_pred, title):
     rmse, mae, r2 = calculate_metrics(y_test, y_pred)
     
     plt.figure(figsize=(10, 6))
@@ -31,7 +31,7 @@ def plot_true_vs_predicted(file_name, time_test, y_test, y_pred, title):
     plt.text(x=0.05, y=0.95, s=f'RMSE = {rmse:.2f}\nMAE = {mae:.2f}\nR2 = {r2:.2f}', 
              transform=plt.gca().transAxes, verticalalignment='top')
     
-    plt.savefig(f'./regression_plot/{file_name}_{title}.png')  # save the plot
+    plt.savefig(f'./regression_plot/{file_name}_{fold}_{title}.png')  # save the plot
     plt.close()
     
     return rmse, mae, r2  # return metrics for each plot
@@ -48,6 +48,9 @@ dummy_regressor = DummyRegressor(strategy='mean')
 for fold in range(5):
     # Get all files in the directory
     files = os.listdir(f"../../data/test_set/scenario_2/fold_{fold}/test/annotations/")
+
+    # Initialize dictionary for this fold
+    performance_metrics[f"fold_{fold}"] = {}
 
     # Loop over files
     for file in files:
@@ -68,23 +71,22 @@ for fold in range(5):
             df_dummy_regressor[emotion] = dummy_regressor.predict(df_test['time'].values.reshape(-1, 1))
 
         # Calculate and store performance metrics
-        performance_metrics[file] = {}
+        performance_metrics[f"fold_{fold}"][file] = {}
 
         for model, df in zip(['predictions', 'dummy regressor'], [df_pred, df_dummy_regressor]):
-            performance_metrics[file][model] = {}
+            performance_metrics[f"fold_{fold}"][file][model] = {}
             for emotion in ['arousal', 'valence']:
                 rmse, mae, r2 = calculate_metrics(df_test[emotion], df[emotion])
-                performance_metrics[file][model][emotion] = {"rmse": rmse, "mae": mae, "r2": r2}
+                performance_metrics[f"fold_{fold}"][file][model][emotion] = {"rmse": rmse, "mae": mae, "r2": r2}
 
         # Generate and save plots for only real predictions
         for emotion in ['arousal', 'valence']:
             rmse, mae, r2 = calculate_metrics(df_test[emotion], df_pred[emotion])
-            plot_true_vs_predicted(file, df_test['time'], df_test[emotion], df_pred[emotion], emotion.capitalize())
+            plot_true_vs_predicted(file, f"fold_{fold}", df_test['time'], df_test[emotion], df_pred[emotion], emotion.capitalize())
 
 # Save performance metrics as JSON
 with open('./regression_plot/performance_metrics.json', 'w') as f:
     json.dump(performance_metrics, f, indent=4)
-
 
 
 # %%
