@@ -114,10 +114,10 @@ def create_folder_structure(root_physiology_folder, root_annotations_folder, sav
         return phys_folder_train, ann_folder_train, output_folder
 
 
-def save_files(x, y, file_path, phys_folder, ann_folder):
+def save_files(x, y, file_path, phys_folder, ann_folder, version=2):
     subject_num, video_num = map(int, file_path.split(os.path.sep)[-1].replace('.csv', '').split('_')[1::2])
     
-    file_base_name = f'sub_{subject_num}_vid_{video_num}'
+    file_base_name = f'sub_{subject_num}_vid_{video_num}_v{version}'
     
     np.save(os.path.join(phys_folder, file_base_name), x)
     np.save(os.path.join(ann_folder, file_base_name), y)
@@ -383,21 +383,22 @@ def tqdm_joblib(tqdm_object):
         joblib.parallel.BatchCompletionCallBack = old_batch_callback
         tqdm_object.close()
         
-def save_test_data(y_pred, output_folder, y_test_file, test = True, y_test = None):
-
-    y_test_file = y_test_file.replace('npy', 'csv')
+def save_test_data(y_pred, output_folder, y_test_file, test = True, y_test = None, version=2):
+    
+    # Add the version to the basename of y_test_file
+    base_name = os.path.splitext(os.path.basename(y_test_file))[0]
+    base_name += f"_v{version}"
     
     if test:
-        df = pd.read_csv(y_test_file)
+        df = pd.DataFrame(np.load(y_test_file), columns=['valence', 'arousal'])
         df['valence'] = y_pred[:, 1]
-        df['arousal'] = y_pred[:, 0]  
+        df['arousal'] = y_pred[:, 0]
     else:
         df = pd.DataFrame(y_test, columns=['valence', 'arousal'])
         df['valence_pred'] = y_pred[:, 1]
         df['arousal_pred'] = y_pred[:, 0] 
-        df['time'] = pd.read_csv(y_test_file).tail(df.shape[0])['time'].values     
-    
+        df['time'] = pd.read_csv(y_test_file.replace('npy', 'csv')).tail(df.shape[0])['time'].values     
 
-    
-    df.to_csv(os.path.join(output_folder, os.path.basename(y_test_file)), index=False)
+    # Use the new base_name to save the file
+    df.to_csv(os.path.join(output_folder, base_name + ".csv"), index=False)
     return None

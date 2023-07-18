@@ -36,8 +36,8 @@ def process_files(annotation_file, physiology_file,):
     df_annotations = pd.read_csv(annotation_file)
     df_physiology = pd.read_csv(physiology_file)
 
-    X, y = preprocess(df_physiology, df_annotations,  predictions_cols=['arousal','valence'], aggregate=['mean','min'], window=[-3000, 3000], partition_window=3)
-    save_files(X, y, annotation_file, os.path.dirname(physiology_file), os.path.dirname(annotation_file))
+    X, y = preprocess(df_physiology, df_annotations,  predictions_cols=['arousal','valence'], aggregate=['mean', 'std', 'max', 'min'], window=[-5000, 5000], partition_window=3)
+    save_files(X, y, annotation_file, os.path.dirname(physiology_file), os.path.dirname(annotation_file), version = 2)
 
 # Process the files using the context manager
 for key in zipped_dict.keys():
@@ -47,16 +47,14 @@ for key in zipped_dict.keys():
                 (delayed(process_files)(ann_file, phys_file) for phys_file, ann_file in zipped_dict[key])
             )
             
+metrics = ['ecg_cleaned', 'rr_signal', 'bvp_cleaned', 'gsr_cleaned', 'gsr_tonic', 'gsr_phasic', 'gsr_SMNA', 'rsp_cleaned', 'resp_rate', 'emg_zygo_cleaned', 'emg_coru_cleaned', 'emg_trap_cleaned', 'skt_filtered']
+aggregations = ['mean', 'std', 'max', 'min']
+parts = ['p1', 'p2', 'p3']
 
-column_names_all = ['ecg_cleaned_mean_p1', 'rr_signal_mean_p1', 'bvp_cleaned_mean_p1', 'gsr_cleaned_mean_p1', 'gsr_tonic_mean_p1', 'gsr_phasic_mean_p1', 'gsr_SMNA_mean_p1', 'rsp_cleaned_mean_p1', 'resp_rate_mean_p1', 'emg_zygo_cleaned_mean_p1', 'emg_coru_cleaned_mean_p1', 'emg_trap_cleaned_mean_p1', 'skt_filtered_mean_p1',
-'ecg_cleaned_min_p1', 'rr_signal_min_p1', 'bvp_cleaned_min_p1', 'gsr_cleaned_min_p1', 'gsr_tonic_min_p1', 'gsr_phasic_min_p1', 'gsr_SMNA_min_p1', 'rsp_cleaned_min_p1', 'resp_rate_min_p1', 'emg_zygo_cleaned_min_p1', 'emg_coru_cleaned_min_p1', 'emg_trap_cleaned_min_p1', 'skt_filtered_min_p1',
+column_names_all = [f'{metric}_{aggregation}_{part}' for part in parts for aggregation in aggregations for metric in metrics]
 
-'ecg_cleaned_mean_p2', 'rr_signal_mean_p2', 'bvp_cleaned_mean_p2', 'gsr_cleaned_mean_p2', 'gsr_tonic_mean_p2', 'gsr_phasic_mean_p2', 'gsr_SMNA_mean_p2', 'rsp_cleaned_mean_p2', 'resp_rate_mean_p2', 'emg_zygo_cleaned_mean_p2', 'emg_coru_cleaned_mean_p2', 'emg_trap_cleaned_mean_p2', 'skt_filtered_mean_p2',
-'ecg_cleaned_min_p2', 'rr_signal_min_p2', 'bvp_cleaned_min_p2', 'gs`gsr_cleaned_min_p2', 'gsr_tonic_min_p2', 'gsr_phasic_min_p2', 'gsr_SMNA_min_p2', 'rsp_cleaned_min_p2', 'resp_rate_min_p2', 'emg_zygo_cleaned_min_p2', 'emg_coru_cleaned_min_p2', 'emg_trap_cleaned_min_p2', 'skt_filtered_min_p2',
 
-'ecg_cleaned_mean_p3', 'rr_signal_mean_p3', 'bvp_cleaned_mean_p3', 'gsr_cleaned_mean_p3', 'gsr_tonic_mean_p3', 'gsr_phasic_mean_p3', 'gsr_SMNA_mean_p3', 'rsp_cleaned_mean_p3', 'resp_rate_mean_p3', 'emg_zygo_cleaned_mean_p3', 'emg_coru_cleaned_mean_p3', 'emg_trap_cleaned_mean_p3', 'skt_filtered_mean_p3',
-'ecg_cleaned_min_p3', 'rr_signal_min_p3', 'bvp_cleaned_min_p3', 'gsr_cleaned_min_p3', 'gsr_tonic_min_p3', 'gsr_phasic_min_p3', 'gsr_SMNA_min_p3', 'rsp_cleaned_min_p3', 'resp_rate_min_p3', 'emg_zygo_cleaned_min_p3', 'emg_coru_cleaned_min_p3', 'emg_trap_cleaned_min_p3', 'skt_filtered_min_p3']
-
+#%%
 def run_experiment(top_features=None):
     random_forest = RandomForestRegressor(
     n_estimators=50,
@@ -68,21 +66,15 @@ def run_experiment(top_features=None):
     zipped_dict_npy = zip_csv_train_test_files(phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, format='.npy')
 
     def test_function(i, top_features=None):
-        # X = np.load(zipped_dict_npy['train'][i][0])
-        # y = np.load(zipped_dict_npy['train'][i][1])
-
         
         X_train = np.load(zipped_dict_npy['train'][i][0])
         y_train = np.load(zipped_dict_npy['train'][i][1])
         X_test = np.load(zipped_dict_npy['test'][i][0])
         y_test = np.load(zipped_dict_npy['test'][i][1])
-        
-
-        
+                
         X_train_df = pd.DataFrame(X_train, columns=column_names_all)
         X_test_df = pd.DataFrame(X_test, columns=column_names_all)
         
-
         if top_features is not None:
             X_train_filtered = X_train_df[top_features.index].values
             X_test_filtered = X_test_df[top_features.index].values
@@ -99,7 +91,7 @@ def run_experiment(top_features=None):
             random_forest, numeric_column_indices=np.array(range(X_train_filtered.shape[1])), test=True)
 
         if top_features is not None:
-            save_test_data(y_pred, output_folder, zipped_dict_npy['test'][i][1], test=True)
+            save_test_data(y_pred, output_folder, zipped_dict_npy['test'][i][1], test=True, version=2)
         return (0,0), importances
 
     num_cpu_cores = multiprocessing.cpu_count()

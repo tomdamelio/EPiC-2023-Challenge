@@ -8,14 +8,45 @@ import matplotlib.pyplot as plt
 from sklearn.dummy import DummyRegressor
 from glob import glob
 
+def concordance_correlation_coefficient(y_true, y_pred):
+    # Handle constant columns
+    constant_columns_true = (y_true.std(axis=0) == 0)
+    constant_columns_pred = (y_pred.std(axis=0) == 0)
+    if constant_columns_true.any() or constant_columns_pred.any():
+        print('Warning: y_true or y_pred contains constant columns.')
+        return np.nan
+
+    # Handle NaN values
+    if np.isnan(y_true).any() or np.isnan(y_pred).any():
+        print('Warning: y_true or y_pred contains NaN values.')
+        return np.nan
+    
+    # Continue with CCC calculation
+    cor = np.corrcoef(y_true, y_pred)[0, 1]
+    
+    mean_true = np.mean(y_true)
+    mean_pred = np.mean(y_pred)
+    
+    var_true = np.var(y_true)
+    var_pred = np.var(y_pred)
+    
+    sd_true = np.std(y_true)
+    sd_pred = np.std(y_pred)
+    
+    numerator = 2 * cor * sd_true * sd_pred
+    denominator = var_true + var_pred + (mean_true - mean_pred) ** 2
+
+    return numerator / denominator
+
 def calculate_metrics(y_test, y_pred):
     rmse = np.sqrt(mean_squared_error(y_test, y_pred))
     mae = mean_absolute_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
-    return rmse, mae, r2
+    ccc = concordance_correlation_coefficient(y_test, y_pred)
+    return rmse, mae, r2, ccc
 
 def plot_true_vs_predicted(file_name, time_train, y_train, time_test, y_test, y_pred, dummy_five, title):
-    rmse, mae, r2 = calculate_metrics(y_test, y_pred)
+    rmse, mae, r2, ccc= calculate_metrics(y_test, y_pred)
     
     # Concatenate train and test true values
     time = pd.concat([time_train, time_test])
@@ -33,7 +64,7 @@ def plot_true_vs_predicted(file_name, time_train, y_train, time_test, y_test, y_
     plt.legend(loc='upper right')
 
     # Add performance metrics to the plot
-    plt.text(x=0.05, y=0.95, s=f'RMSE = {rmse:.2f}\nMAE = {mae:.2f}\nR2 = {r2:.2f}', 
+    plt.text(x=0.05, y=0.95, s=f'RMSE = {rmse:.2f}\nMAE = {mae:.2f}\nR2 = {r2:.2f}\nCCC = {ccc:.2f}', 
              transform=plt.gca().transAxes, verticalalignment='top')
     
     # Dotted vertical line to indicate where test data starts
@@ -95,12 +126,12 @@ for file in files:
     for model, df in zip(['predictions', 'last value predictions', 'dummy regressor'], [df_pred, df_dummy, df_dummy_regressor]):
         performance_metrics[file][model] = {}
         for emotion in ['arousal', 'valence']:
-            rmse, mae, r2 = calculate_metrics(df_test[emotion], df[emotion])
-            performance_metrics[file][model][emotion] = {"rmse": rmse, "mae": mae, "r2": r2}
+            rmse, mae, r2, ccc = calculate_metrics(df_test[emotion], df[emotion])
+            performance_metrics[file][model][emotion] = {"rmse": rmse, "mae": mae, "r2": r2, "ccc": ccc}
 
     # Generate and save plots for only real predictions
     for emotion in ['arousal', 'valence']:
-        rmse, mae, r2 = calculate_metrics(df_test[emotion], df_pred[emotion])
+        rmse, mae, r2, cccc = calculate_metrics(df_test[emotion], df_pred[emotion])
         plot_true_vs_predicted(file, time_train, df_train[emotion], time_test, df_test[emotion], df_pred[emotion], df_dummy[emotion], emotion.capitalize())
 
 # Save performance metrics as JSON
