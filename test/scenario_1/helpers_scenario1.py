@@ -43,7 +43,7 @@ def zip_csv_files(folder_path_1, folder_path_2):
 
     return zipped_files
 
-def zip_csv_train_test_files(folder_phys_train, folder_ann_train, folder_phys_test, folder_ann_test, format = '.csv'):
+def zip_csv_train_test_files(folder_phys_train, folder_ann_train, folder_phys_test, folder_ann_test, format = '.npy'):
     """reads all csv or npy files in the folder and returns a list of tuples with corresponding CSV file paths in both folders. Useful to loop over all files in two folders.
 
     Args:
@@ -64,6 +64,18 @@ def zip_csv_train_test_files(folder_phys_train, folder_ann_train, folder_phys_te
         files_ann_train = glob.glob(folder_ann_train + '/*.npy')
         files_phys_test = glob.glob(folder_phys_test + '/*.npy')
         files_ann_test = glob.glob(folder_ann_test + '/*.npy')
+        
+    elif format == 'mix':
+        files_phys_train = glob.glob(folder_phys_train + '/*.npy')
+        files_ann_train = glob.glob(folder_ann_train + '/*.npy')
+        files_phys_test = glob.glob(folder_phys_test + '/*.npy')
+        files_ann_test = glob.glob(folder_ann_test + '/*.csv')
+    
+    assert len(files_phys_train) > 0, f"No .npy files found in {folder_phys_train}"
+    assert len(files_ann_train) > 0, f"No .npy files found in {folder_ann_train}"
+    assert len(files_phys_test) > 0, f"No .npy files found in {folder_phys_test}"
+    assert len(files_ann_test) > 0, f"No .npy files found in {folder_ann_test}"
+
 
 
     # Create a dictionary with keys as (subject_num, video_num) and values as the file path
@@ -82,7 +94,7 @@ def zip_csv_train_test_files(folder_phys_train, folder_ann_train, folder_phys_te
 
     return zipped_dict
 
-def create_folder_structure(root_physiology_folder, root_annotations_folder, save_output_folder, scenario, fold=None, test=False):
+def create_folder_structure(root_physiology_folder, root_annotations_folder, save_output_folder, scenario, fold=None, test=False, version = '3'):
     # Create scenario path
     scenario_str = f"scenario_{scenario}"
     
@@ -91,17 +103,22 @@ def create_folder_structure(root_physiology_folder, root_annotations_folder, sav
 
     # Create paths
     if test:
-        phys_folder_train = os.path.join(root_physiology_folder, scenario_str, fold_str, "train", "physiology")
+        phys_folder_train = os.path.join(root_physiology_folder, scenario_str, fold_str, "train", "physiology", "v2")
         ann_folder_train = os.path.join(root_annotations_folder, scenario_str, fold_str, "train", "annotations")
-        phys_folder_test = os.path.join(root_physiology_folder, scenario_str, fold_str, "test", "physiology")
-        ann_folder_test = os.path.join(root_annotations_folder, scenario_str, fold_str, "test", "annotations")
+        phys_folder_test = os.path.join(root_physiology_folder, scenario_str, fold_str, "test", "physiology", "v2")
+        ann_folder_test = os.path.join(root_annotations_folder, scenario_str, fold_str, "test", "annotations", f"v{version}")
     else:
-        phys_folder_train = os.path.join(root_physiology_folder, scenario_str, fold_str, "physiology")
+        phys_folder_train = os.path.join(root_physiology_folder, scenario_str, fold_str, "physiology", "v2")
         ann_folder_train = os.path.join(root_annotations_folder, scenario_str, fold_str, "annotations")
         phys_folder_test = None
         ann_folder_test = None
+        
+    print(phys_folder_train)
+    print(ann_folder_train)
+    print(phys_folder_test)
+    print(ann_folder_test)
 
-    output_folder = os.path.join(save_output_folder, scenario_str, fold_str, 'test','annotations')
+    output_folder = os.path.join(save_output_folder, scenario_str, fold_str, 'test','annotations', f'v{version}')
 
     # Create directories if they don't exist
     for folder in [phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, output_folder]:
@@ -114,10 +131,10 @@ def create_folder_structure(root_physiology_folder, root_annotations_folder, sav
         return phys_folder_train, ann_folder_train, output_folder
 
 
-def save_files(x, y, file_path, phys_folder, ann_folder, version=2):
+def save_files(x, y, file_path, phys_folder, ann_folder):
     subject_num, video_num = map(int, file_path.split(os.path.sep)[-1].replace('.csv', '').split('_')[1::2])
     
-    file_base_name = f'sub_{subject_num}_vid_{video_num}_v{version}'
+    file_base_name = f'sub_{subject_num}_vid_{video_num}'
     
     np.save(os.path.join(phys_folder, file_base_name), x)
     np.save(os.path.join(ann_folder, file_base_name), y)
@@ -343,7 +360,7 @@ def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, 
 
     pipeline = Pipeline([
         ('preprocessor', preprocessor),
-        # ('pca', PCA(n_components=5)),
+        ('pca', PCA(n_components=5)),
         ('model', model_instance)
     ])
     
@@ -383,11 +400,10 @@ def tqdm_joblib(tqdm_object):
         joblib.parallel.BatchCompletionCallBack = old_batch_callback
         tqdm_object.close()
         
-def save_test_data(y_pred, output_folder, y_test_file, test = True, y_test = None, version=2):
+def save_test_data(y_pred, output_folder, y_test_file, test = True, y_test = None):
     
-    # Add the version to the basename of y_test_file
+    # Remove version from the basename of y_test_file
     base_name = os.path.splitext(os.path.basename(y_test_file))[0]
-    base_name += f"_v{version}"
     
     if test:
         df = pd.DataFrame(np.load(y_test_file), columns=['valence', 'arousal'])

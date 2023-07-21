@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 from sklearn.dummy import DummyRegressor
 from glob import glob
 
+version = 'v2'
+
 def concordance_correlation_coefficient(y_true, y_pred):
     # Handle constant columns
     constant_columns_true = (y_true.std(axis=0) == 0)
@@ -70,12 +72,12 @@ def plot_true_vs_predicted(file_name, time_train, y_train, time_test, y_test, y_
     # Dotted vertical line to indicate where test data starts
     plt.axvline(x=time_test.iloc[0], linestyle='dotted', color='black')
     
-    plt.savefig(f'./regression_plot/{file_name}_{title}.png')  # save the plot
+    plt.savefig(f'./regression_plot/{version}/{file_name}_{title}.png')  # save the plot
     plt.close()
     
     return rmse, mae, r2  # return metrics for each plot
 
-os.makedirs('./regression_plot', exist_ok=True)
+os.makedirs(f'./regression_plot/{version}', exist_ok=True)
 
 # Get all files in the directory
 files = os.listdir("../../data/test_set/scenario_1/test/annotations/")
@@ -87,57 +89,65 @@ performance_metrics = {}
 dummy_regressor_arousal = DummyRegressor(strategy='constant', constant=5.0)	
 dummy_regressor_valence = DummyRegressor(strategy='constant', constant=5.0)	
 
-# Loop over files
-for file in files:
-    # Ignore non-csv files
-    if not file.endswith('.csv'):
-        continue
-
-    print(f'Processing file: {file}')
-
-    # Load the data
-    df_train = pd.read_csv(f"../../data/raw/scenario_1/train/annotations/{file}")
-    df_test = pd.read_csv(f"../../data/test_set/scenario_1/test/annotations/{file}")
-    df_pred = pd.read_csv(f"../../results/scenario_1/test/annotations/{file}")
-
-    # Create df_dummy with constant arousal and valence
-    df_dummy = df_pred.copy()
-    df_dummy['arousal'] = df_train['arousal'].iloc[-1]
-    df_dummy['valence'] = df_train['valence'].iloc[-1]
-
-    dummy_regressor_arousal.fit(np.zeros(df_train['arousal'].shape), df_train['arousal'])
-    dummy_regressor_valence.fit(np.zeros(df_train['valence'].shape), df_train['valence'])
+try:
+    # your code here...
+    for file in files:
+        print(f"Processing {file}")
+        # Ignore non-csv files
+        if not file.endswith('.csv'):
+            continue
     
-    # Create df_dummy_regressor with mean of train data as arousal and valence
-    df_dummy_regressor = df_pred.copy()
-    df_dummy_regressor['arousal'] = dummy_regressor_arousal.predict(np.zeros(df_test.shape[0]))
-    df_dummy_regressor['valence'] = dummy_regressor_valence.predict(np.zeros(df_test.shape[0]))
+        print(f'Processing file: {file}')
 
-    # Assuming there is a "time" column in your csv
-    time_train = df_train['time']
-    # Generate new time series for test data
-    start_time = time_train.iloc[-1] + 50
-    end_time = start_time + len(df_test) * 50
-    time_test = pd.Series(np.arange(start_time, end_time, 50))
+        # Load the data
+        df_train = pd.read_csv(f"../../data/raw/scenario_1/train/annotations/{file}")
+        df_test = pd.read_csv(f"../../data/test_set/scenario_1/test/annotations/{file}")
+        df_pred = pd.read_csv(f"../../results/scenario_1/test/annotations/{version}/{file}")
 
-    # Calculate and store performance metrics
-    performance_metrics[file] = {}
+        # Create df_dummy with constant arousal and valence
+        df_dummy = df_pred.copy()
+        df_dummy['arousal'] = df_train['arousal'].iloc[-1]
+        df_dummy['valence'] = df_train['valence'].iloc[-1]
 
-    for model, df in zip(['predictions', 'last value predictions', 'dummy regressor'], [df_pred, df_dummy, df_dummy_regressor]):
-        performance_metrics[file][model] = {}
+        dummy_regressor_arousal.fit(np.zeros(df_train['arousal'].shape), df_train['arousal'])
+        dummy_regressor_valence.fit(np.zeros(df_train['valence'].shape), df_train['valence'])
+        
+        # Create df_dummy_regressor with mean of train data as arousal and valence
+        df_dummy_regressor = df_pred.copy()
+        df_dummy_regressor['arousal'] = dummy_regressor_arousal.predict(np.zeros(df_test.shape[0]))
+        df_dummy_regressor['valence'] = dummy_regressor_valence.predict(np.zeros(df_test.shape[0]))
+
+        # Assuming there is a "time" column in your csv
+        time_train = df_train['time']
+        # Generate new time series for test data
+        start_time = time_train.iloc[-1] + 50
+        end_time = start_time + len(df_test) * 50
+        time_test = pd.Series(np.arange(start_time, end_time, 50))
+
+        # Calculate and store performance metrics
+        performance_metrics[file] = {}
+
+        for model, df in zip(['predictions', 'last value predictions', 'dummy regressor'], [df_pred, df_dummy, df_dummy_regressor]):
+            performance_metrics[file][model] = {}
+            for emotion in ['arousal', 'valence']:
+                rmse, mae, r2, ccc = calculate_metrics(df_test[emotion], df[emotion])
+                performance_metrics[file][model][emotion] = {"rmse": rmse, "mae": mae, "r2": r2, "ccc": ccc}
+
+        # Generate and save plots for only real predictions
         for emotion in ['arousal', 'valence']:
-            rmse, mae, r2, ccc = calculate_metrics(df_test[emotion], df[emotion])
-            performance_metrics[file][model][emotion] = {"rmse": rmse, "mae": mae, "r2": r2, "ccc": ccc}
+            try:
+                rmse, mae, r2, ccc = calculate_metrics(df_test[emotion], df[emotion])
+            except Exception as e:
+                print(f"An error occurred while calculating metrics for {file}, {emotion}: {e}")
 
-    # Generate and save plots for only real predictions
-    for emotion in ['arousal', 'valence']:
-        rmse, mae, r2, cccc = calculate_metrics(df_test[emotion], df_pred[emotion])
-        plot_true_vs_predicted(file, time_train, df_train[emotion], time_test, df_test[emotion], df_pred[emotion], df_dummy[emotion], emotion.capitalize())
+            plot_true_vs_predicted(file, time_train, df_train[emotion], time_test, df_test[emotion], df_pred[emotion], df_dummy[emotion], emotion.capitalize())
 
+except Exception as e:
+    print(f"An error occurred: {e}")
 # Save performance metrics as JSON
-with open('./regression_plot/performance_metrics.json', 'w') as f:
+with open(f'./regression_plot/{version}/performance_metrics.json', 'w') as f:
     json.dump(performance_metrics, f, indent=4)
 
+print(performance_metrics)
 
 # %%
-

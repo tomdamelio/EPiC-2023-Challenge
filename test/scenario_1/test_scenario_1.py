@@ -22,30 +22,31 @@ from xgboost import XGBRegressor
 from helpers_scenario1 import *
 
 scenario = 1
+version = '3'
 fold = None
 root_physiology_folder = "../../data/preprocessed/"
 root_annotations_folder = "../../data/raw/"
 save_output_folder = "../../results/"
 
 phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, output_folder, = create_folder_structure(
-    root_physiology_folder, root_annotations_folder, save_output_folder, scenario, fold, test=True)
+    root_physiology_folder, root_annotations_folder, save_output_folder, scenario, fold, test=True, version = version)
 
-zipped_dict = zip_csv_train_test_files(phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, format='.csv')
+zipped_dict = zip_csv_train_test_files(phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, format='.npy')
 
 def process_files(annotation_file, physiology_file,):
     df_annotations = pd.read_csv(annotation_file)
     df_physiology = pd.read_csv(physiology_file)
 
     X, y = preprocess(df_physiology, df_annotations,  predictions_cols=['arousal','valence'], aggregate=['mean', 'std', 'max', 'min'], window=[-5000, 5000], partition_window=3)
-    save_files(X, y, annotation_file, os.path.dirname(physiology_file), os.path.dirname(annotation_file), version = 2)
+    save_files(X, y, annotation_file, os.path.dirname(physiology_file), os.path.dirname(annotation_file), version = version)
 
 # Process the files using the context manager
-for key in zipped_dict.keys():
-    with parallel_backend('loky', n_jobs= multiprocessing.cpu_count()//2):
-        with tqdm_joblib(tqdm(total=len(zipped_dict[key]), desc=f"{key} files", leave=False)) as progress_bar:
-            results = Parallel()(
-                (delayed(process_files)(ann_file, phys_file) for phys_file, ann_file in zipped_dict[key])
-            )
+# for key in zipped_dict.keys():
+#     with parallel_backend('loky', n_jobs= multiprocessing.cpu_count()//2):
+#         with tqdm_joblib(tqdm(total=len(zipped_dict[key]), desc=f"{key} files", leave=False)) as progress_bar:
+#             results = Parallel()(
+#                 (delayed(process_files)(ann_file, phys_file) for phys_file, ann_file in zipped_dict[key])
+#             )
             
 metrics = ['ecg_cleaned', 'rr_signal', 'bvp_cleaned', 'gsr_cleaned', 'gsr_tonic', 'gsr_phasic', 'gsr_SMNA', 'rsp_cleaned', 'resp_rate', 'emg_zygo_cleaned', 'emg_coru_cleaned', 'emg_trap_cleaned', 'skt_filtered']
 aggregations = ['mean', 'std', 'max', 'min']
@@ -53,8 +54,6 @@ parts = ['p1', 'p2', 'p3']
 
 column_names_all = [f'{metric}_{aggregation}_{part}' for part in parts for aggregation in aggregations for metric in metrics]
 
-
-#%%
 def run_experiment(top_features=None):
     random_forest = RandomForestRegressor(
     n_estimators=50,
@@ -67,10 +66,20 @@ def run_experiment(top_features=None):
 
     def test_function(i, top_features=None):
         
-        X_train = np.load(zipped_dict_npy['train'][i][0])
-        y_train = np.load(zipped_dict_npy['train'][i][1])
-        X_test = np.load(zipped_dict_npy['test'][i][0])
-        y_test = np.load(zipped_dict_npy['test'][i][1])
+        print(f"Processing file number {i}")
+        
+        X_train = np.load(zipped_dict_npy['train'][i][0], allow_pickle=True)
+        print(X_train)
+        print(zipped_dict_npy['train'][i][0])
+        y_train = np.load(zipped_dict_npy['train'][i][1], allow_pickle=True)
+        print(y_train)
+        print(zipped_dict_npy['train'][i][1])
+        X_test = np.load(zipped_dict_npy['test'][i][0], allow_pickle=True)
+        print(X_test)
+        print(zipped_dict_npy['test'][i][0])
+        y_test = np.load(zipped_dict_npy['test'][i][1], allow_pickle=True)
+        print(y_test)
+        print(zipped_dict_npy['test'][i][1])
                 
         X_train_df = pd.DataFrame(X_train, columns=column_names_all)
         X_test_df = pd.DataFrame(X_test, columns=column_names_all)
@@ -90,13 +99,19 @@ def run_experiment(top_features=None):
             X_train_filtered, X_test_filtered, y_train, y_test,
             random_forest, numeric_column_indices=np.array(range(X_train_filtered.shape[1])), test=True)
 
+        print(y_pred)
+        
         if top_features is not None:
-            save_test_data(y_pred, output_folder, zipped_dict_npy['test'][i][1], test=True, version=2)
-        return (0,0), importances
+            save_test_data(y_pred, f'../../results/scenario_{scenario}/test/annotations/v{version}', zipped_dict_npy['test'][i][1], test=True)
+        
+        print(f"Importances for file number {i}: {importances}")
 
+        
     num_cpu_cores = multiprocessing.cpu_count()
     all_results = []
     all_importances_list = []
+    
+    print(f"File paths in zipped_dict['train']: {zipped_dict['train']}")
 
     with parallel_backend('loky', n_jobs=num_cpu_cores - 5):
         with tqdm_joblib(tqdm(total=len(zipped_dict['train']), desc="Files", leave=False)) as progress_bar:
@@ -106,7 +121,7 @@ def run_experiment(top_features=None):
         for i in range(len(zipped_dict['train'])):
             all_results.append(results[i][0])
             all_importances_list.append(results[i][1])
-
+            
     all_importances = pd.concat(all_importances_list, ignore_index=True)
 
     if top_features is not None:
@@ -119,14 +134,16 @@ def run_experiment(top_features=None):
     df_results = pd.DataFrame(all_results, columns=['arousal', 'valence'])
     
     # create directory if it doesn't exist
-    results_dir = '../../results/scenario_1'
+    results_dir = f'../../results/scenario_{scenario}'
     os.makedirs(results_dir, exist_ok=True)
     
-    df_results.to_csv(os.path.join('../../results/scenario_1', 'results_rf.csv'), index=False)
+    df_results.to_csv(os.path.join(f'../../results/scenario_{scenario}', 'results_rf.csv'), index=False)
 
     return all_importances, df_results
 
 all_importances, df_results = run_experiment(top_features=None) # Pass in a DataFrame with top features or None
+
+#%%
 
 def plot_and_save_top_features(all_importances, n_features, plot=False):
     mean_importances = all_importances.mean(axis=0)
