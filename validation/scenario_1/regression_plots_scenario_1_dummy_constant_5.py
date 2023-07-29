@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from sklearn.dummy import DummyRegressor
 from glob import glob
 
-version = 'v2'
+version = 'PCA'
 
 def concordance_correlation_coefficient(y_true, y_pred):
     # Handle constant columns
@@ -80,7 +80,8 @@ def plot_true_vs_predicted(file_name, time_train, y_train, time_test, y_test, y_
 os.makedirs(f'./regression_plot/{version}', exist_ok=True)
 
 # Get all files in the directory
-files = os.listdir("../../data/test_set/scenario_1/test/annotations/")
+files = os.listdir(f"../../data/test_set/scenario_1/test/annotations")
+print(files)
 
 # Initialize dictionary for performance metrics
 performance_metrics = {}

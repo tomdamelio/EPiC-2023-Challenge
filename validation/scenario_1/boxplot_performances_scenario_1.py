@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import json
 
-version = 'v1'
+version = 'PCA'
 
 # Load the JSON file
 with open(f'./regression_plot/{version}/performance_metrics.json', 'r') as f:
@@ -55,7 +55,7 @@ plt.title(f'RMSE for Different Models (Arousal) - CCC =  {mean_ccc_valence["pred
           f'Last Value Predictions: {mean_rmse_valence["last value predictions"]:.2f}, '
           f'Dummy Regressor: {mean_rmse_valence["dummy regressor"]:.2f}')
 plt.grid(True)
-plt.savefig('./rmse_comparison_valence.png')  # save the plot
+plt.savefig(f'./{version}/rmse_comparison_valence.png')  # save the plot
 plt.show()
 
 # %%

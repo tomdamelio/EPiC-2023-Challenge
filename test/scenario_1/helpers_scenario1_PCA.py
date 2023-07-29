@@ -82,7 +82,7 @@ def zip_csv_train_test_files(folder_phys_train, folder_ann_train, folder_phys_te
 
     return zipped_dict
 
-def create_folder_structure(root_physiology_folder, root_annotations_folder, save_output_folder, scenario, fold=None, test=False):
+def create_folder_structure(root_physiology_folder, root_annotations_folder, save_output_folder, scenario, fold=None, test=False, version=''):
     # Create scenario path
     scenario_str = f"scenario_{scenario}"
     
@@ -101,7 +101,7 @@ def create_folder_structure(root_physiology_folder, root_annotations_folder, sav
         phys_folder_test = None
         ann_folder_test = None
 
-    output_folder = os.path.join(save_output_folder, scenario_str, fold_str, 'test','annotations')
+    output_folder = os.path.join(save_output_folder, scenario_str, fold_str, 'test','annotations',version)
 
     # Create directories if they don't exist
     for folder in [phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, output_folder]:
@@ -301,7 +301,7 @@ def _fit_and_evaluate(train_index, test_index, X, y, pipeline):
 
 from sklearn.multioutput import MultiOutputRegressor
 
-def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, y_test, model, numeric_column_indices=None,test = True):
+def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, y_test, model, numeric_column_indices=None,test = True, use_PCA=False, n_components=30):
     """
     Perform time series cross-validation with hyperparameters for a given model.
 
@@ -341,11 +341,15 @@ def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, 
     if multi_output:
         model_instance = MultiOutputRegressor(model_instance)
 
-    pipeline = Pipeline([
+    # Add PCA to the pipeline if PCA is True
+    steps = [
         ('preprocessor', preprocessor),
-        # ('pca', PCA(n_components=5)),
-        ('model', model_instance)
-    ])
+        ('model', model)
+    ]
+    if use_PCA:
+        steps.insert(1, ('pca', PCA(n_components=n_components)))  # Adjust n_components as needed
+
+    pipeline = Pipeline(steps)
     
     pipeline.fit(X_train, y_train)
     y_pred = pipeline.predict(X_test)
@@ -364,7 +368,7 @@ def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, 
     else:  
         rmse_per_output = mean_squared_error(y_test, y_pred, squared=False, multioutput='raw_values')
 
-        return y_pred, importances_df,  rmse_per_output, 
+        return y_pred, importances_df,  rmse_per_output 
 
 
 # Define the context manager

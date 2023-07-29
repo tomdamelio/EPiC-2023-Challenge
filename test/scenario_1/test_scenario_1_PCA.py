@@ -13,22 +13,38 @@ from tqdm.auto import tqdm
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
 from sklearn.neighbors import KNeighborsRegressor
 from joblib import Parallel, delayed
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 
-from helpers_scenario1 import *
+from helpers_scenario1_PCA import *
 
 scenario = 1
+
+version = 'PCA'
+components = 30
+pca = True
+
 fold = None
+
 root_physiology_folder = "../../data/preprocessed/"
 root_annotations_folder = "../../data/raw/"
+
+
+
+def save_files(x, y, file_path, phys_folder, ann_folder):
+    subject_num, video_num = map(int, file_path.split(os.path.sep)[-1].replace('.csv', '').split('_')[1::2])
+    
+    file_base_name = f'sub_{subject_num}_vid_{video_num}'
+    
+    np.save(os.path.join(phys_folder, file_base_name), x)
+    np.save(os.path.join(ann_folder, file_base_name), y)
+
 save_output_folder = "../../results/"
 
 phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, output_folder, = create_folder_structure(
-    root_physiology_folder, root_annotations_folder, save_output_folder, scenario, fold, test=True)
+    root_physiology_folder, root_annotations_folder, save_output_folder, scenario, fold, test=True, version='PCA')
 
 zipped_dict = zip_csv_train_test_files(phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, format='.csv')
 
@@ -63,7 +79,7 @@ def run_experiment(top_features=None):
     
     zipped_dict_npy = zip_csv_train_test_files(phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, format='.npy')
 
-    def test_function(i, top_features=None):
+    def test_function(i, top_features=None, n_components=components):
         # X = np.load(zipped_dict_npy['train'][i][0])
         # y = np.load(zipped_dict_npy['train'][i][1])
 
@@ -72,31 +88,41 @@ def run_experiment(top_features=None):
         y_train = np.load(zipped_dict_npy['train'][i][1])
         X_test = np.load(zipped_dict_npy['test'][i][0])
         y_test = np.load(zipped_dict_npy['test'][i][1])
-        
-
-        
+                
         X_train_df = pd.DataFrame(X_train, columns=column_names_all)
         X_test_df = pd.DataFrame(X_test, columns=column_names_all)
         
+        # Convert DataFrame to NumPy array
+        X_train_filtered = X_train_df.values
+        X_test_filtered = X_test_df.values
+        
 
-        if top_features is not None:
-            X_train_filtered = X_train_df[top_features.index].values
-            X_test_filtered = X_test_df[top_features.index].values
+        #if top_features is not None:
+        #    X_train_filtered = X_train_df[top_features.index].values
+        #    X_test_filtered = X_test_df[top_features.index].values
 
-        else:
-            X_train_filtered = X_train_df.values
-            X_test_filtered = X_test_df.values
+        #else:
+        #    X_train_filtered = X_train_df.values
+        #    X_test_filtered = X_test_df.values
 
-            # X_train, X_test, y_train, y_test = train_test_split(X_filtered, y, test_size=0.2, shuffle=False)
+        #    # X_train, X_test, y_train, y_test = train_test_split(X_filtered, y, test_size=0.2, shuffle=False)
         
 
         y_pred, importances = time_series_cross_validation_with_hyperparameters(
             X_train_filtered, X_test_filtered, y_train, y_test,
-            random_forest, numeric_column_indices=np.array(range(X_train_filtered.shape[1])), test=True)
+            random_forest, numeric_column_indices=np.array(range(X_train_filtered.shape[1])), test=True, use_PCA = pca, n_components=n_components)
 
-        if top_features is not None:
-            save_test_data(y_pred, output_folder, zipped_dict_npy['test'][i][1], test=True)
-        return (0,0), importances
+        # Handle feature importances
+        if isinstance(random_forest, Pipeline):
+            importances_df = pd.DataFrame(random_forest.named_steps['model'].feature_importances_.reshape(1, -1))
+        else:
+            pca_components = [f"PCA_component_{i+1}" for i in range(n_components)]  # Adjust range as needed
+            importances = pd.DataFrame(np.zeros((1, n_components)), columns=pca_components)  # Create a DataFrame with zeros
+            importances_df = importances  # Ensure importances_df is defined in this case
+
+        # Save test data
+        save_test_data(y_pred, output_folder, zipped_dict_npy['test'][i][1], test=True)
+        return (0,0), importances_df
 
     num_cpu_cores = multiprocessing.cpu_count()
     all_results = []
@@ -116,7 +142,10 @@ def run_experiment(top_features=None):
     if top_features is not None:
         column_names = top_features.index
     else:
-        column_names = column_names_all
+        if pca:
+            column_names = [f"PCA_component_{i+1}" for i in range(components)]
+        else:
+            column_names = column_names_all
     
     all_importances.columns = column_names
 
@@ -158,7 +187,7 @@ def rmse_improved(n_features):
 
     return all_importances_n, df_results_n, comparison_df
 
-n_features = 5
+n_features = components
 all_importances_n, df_results_n, comparison_df = rmse_improved(n_features)
 print(f"Comparison of Mean RMSE for All Features vs Top {n_features} Features:")
 print(comparison_df)

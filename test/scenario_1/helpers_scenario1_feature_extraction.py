@@ -10,6 +10,7 @@ import pandas as pd
 import contextlib
 import joblib
 from joblib import Parallel, delayed
+import pysiology
 
 from scipy.signal import resample
 from sklearn.model_selection import TimeSeriesSplit
@@ -82,7 +83,7 @@ def zip_csv_train_test_files(folder_phys_train, folder_ann_train, folder_phys_te
 
     return zipped_dict
 
-def create_folder_structure(root_physiology_folder, root_annotations_folder, save_output_folder, scenario, fold=None, test=False):
+def create_folder_structure(root_physiology_folder, root_annotations_folder, save_output_folder, scenario, fold=None, test=False, version=''):
     # Create scenario path
     scenario_str = f"scenario_{scenario}"
     
@@ -101,7 +102,7 @@ def create_folder_structure(root_physiology_folder, root_annotations_folder, sav
         phys_folder_test = None
         ann_folder_test = None
 
-    output_folder = os.path.join(save_output_folder, scenario_str, fold_str, 'test','annotations')
+    output_folder = os.path.join(save_output_folder, scenario_str, fold_str, 'test','annotations',version)
 
     # Create directories if they don't exist
     for folder in [phys_folder_train, ann_folder_train, phys_folder_test, ann_folder_test, output_folder]:
@@ -122,9 +123,7 @@ def save_files(x, y, file_path, phys_folder, ann_folder):
     np.save(os.path.join(phys_folder, file_base_name), x)
     np.save(os.path.join(ann_folder, file_base_name), y)
     
-    
-
-    
+        
 def load_and_concatenate_files(base_path, train_test_split, vid ):
     train_data = []
     test_data = []
@@ -151,87 +150,71 @@ def load_and_concatenate_files(base_path, train_test_split, vid ):
                     else:
                         test_data.append(data)
     
-def preprocess(df_physiology, df_annotations, predictions_cols  = 'arousal', aggregate=None, window = [-1000, 500], partition_window = 1, downsample_window = 10):
-    """
-    Preprocesses the input data for further processing and modeling.
-    
-    Parameters:
-    ----------
-    df_physiology : pd.DataFrame
-        The input physiological data with columns: time, and physiological signals.
-    df_annotations : pd.DataFrame
-        The annotations DataFrame with columns: time and arousal.
-    aggregate : list of str, optional
-        The list of aggregation functions to apply on the input data.
-        Available options are: 'mean', 'std', 'enlarged', or any combination of these.
-        If None, it will return the 3D matrix as is.
-    window_duration : list, optional
-        The duration of the sliding window in milliseconds (default is -1000, 500).
-    
-    Returns:
-    -------
-    X : np.ndarray
-        The preprocessed input data (features) as a 2D array.
-    y : np.ndarray
-        The arousal values corresponding to each window.
-    numeric_column_indices : list of int
-        The indices of numeric columns in the input data.
-    categorical_column_indices : list of int
-        The indices of categorical columns in the input data.
-    """
-    df_physiology['time'] = pd.to_timedelta(df_physiology['time'], unit='ms')
-    df_physiology.set_index('time', inplace=True)
-    df_annotations['time'] = pd.to_timedelta(df_annotations['time'], unit='ms')
-    
 
-    X_windows =  sliding_window_with_annotation(df_physiology, df_annotations, start=window[0], end=window[1], downsample = downsample_window)
-    # print(f'X_windows dimensions: {X_windows.shape}')
-
-    aggregate_local = aggregate.copy() if aggregate is not None else None
-
-    X = np.array([np.array(X_windows[:, :, i].tolist()) for i in range(X_windows.shape[2])]).T
+def preprocess(df_physiology, df_annotations, predictions_cols  = ['arousal', 'valence'], window = [-1000, 500], partition_window = 3, downsample_window = 10):
+    # Función para generar features en base a la columna
     
-    # print('X shape: ', X.shape)
-    
+    def identity(x):
+        return x
     
     def partition_and_aggregate(arr, agg_func, partition_window):
         partition_size = arr.shape[1] // partition_window
         partitions = [arr[:, i * partition_size:(i + 1) * partition_size] for i in range(partition_window)]
         partitions_aggregated = [np.apply_along_axis(agg_func, axis=1, arr=partition) for partition in partitions]
         return np.concatenate(partitions_aggregated, axis=1)
-
-    X_aggregated = []
-
-    if aggregate_local is not None:
-        if "enlarged" in aggregate_local:
-            X_enlarged = np.array([np.array(X_windows[i].flatten().tolist()) for i in range(X_windows.shape[0])])
-            X_aggregated.append(X_enlarged)
-            aggregate_local.remove("enlarged")
-
-        agg_funcs = {
-            "mean": np.mean,
-            "std": np.std,
-            "max": np.max,
-            "min": np.min,
-            # Add more aggregation functions here
-        }
-
-        for agg in aggregate_local:
-            X_agg = partition_and_aggregate(X_windows, agg_funcs[agg], partition_window)
-            X_aggregated.append(X_agg)
-
-        if X_aggregated:
-            X = np.concatenate(X_aggregated, axis=1)
     
-    # print('X shape: ', X.shape)
+    def generate_features(col_data, col_name, sr=500, partition_window=3):
+        if col_name == 'ecg_cleaned':
+            features = pysiology.electrocardiography.analyzeECG(col_data, samplerate = sr/downsample_window, preprocessing=False)
+        elif col_name == 'gsr_cleaned':
+            features = pysiology.electrodermalactivity.analyzeGSR(col_data, samplerate = sr/downsample_window, preprocessing=False)
+        elif col_name in ['emg_zygo_cleaned', 'emg_coru_cleaned', 'emg_trap_cleaned']:
+            features = pysiology.electromyography.analyzeEMG(col_data, samplerate = sr/downsample_window, preprocessing=False)
+        
+        # Aquí puedes definir tu función de agregación. En este ejemplo, estoy usando la media numpy,
+        # pero puedes reemplazarla por cualquier función de agregación que desees utilizar.
+        agg_func = np.mean()
+        features = partition_and_aggregate(features, agg_func, partition_window)
+        
+        return features
 
+    # Preprocesamiento inicial
+    df_physiology = df_physiology[['time', 'ecg_cleaned', 'gsr_cleaned',  'emg_zygo_cleaned', 'emg_coru_cleaned', 'emg_trap_cleaned']]
+    df_physiology['time'] = pd.to_timedelta(df_physiology['time'], unit='ms')
+    df_physiology.set_index('time', inplace=True)
+    df_annotations['time'] = pd.to_timedelta(df_annotations['time'], unit='ms')
 
+    # Creación de ventanas deslizantes
+    X_windows =  sliding_window_with_annotation(df_physiology, df_annotations, start=window[0], end=window[1], downsample = downsample_window)
+
+    # Preparación de listas para almacenar features y sus nombres
+    X_features = []
+    feature_names = []
+
+    # Para cada columna, generar features y añadirlas a la lista
+    for i in range(X_windows.shape[2]):
+        col_data = X_windows[:, :, i]
+        col_name = df_physiology.columns[i]
+
+        # Generar y almacenar features
+        features = generate_features(col_data, col_name)
+        X_features.append(features)
+        
+        # Generar y almacenar nombres de las features
+        if isinstance(features, dict):
+            for key in features.keys():
+                feature_names.append(f'{col_name}_{key}')
+        elif isinstance(features, dict) and all(isinstance(value, dict) for value in features.values()):
+            for key_outer in features.keys():
+                for key_inner in features[key_outer].keys():
+                    feature_names.append(f'{col_name}_{key_outer}_{key_inner}')
+
+    # Convertir listas a np.array
+    X = np.array(X_features)
     y = df_annotations[predictions_cols].values
 
-    numeric_column_indices = [i for i, col_dtype in enumerate(df_physiology.dtypes) if np.issubdtype(col_dtype, np.number)]
-    # categorical_column_indices = [i for i, col_dtype in enumerate(df_physiology.dtypes) if not np.issubdtype(col_dtype, np.number)]
+    return X, y, feature_names
 
-    return X, y, #numeric_column_indices #,categorical_column_indices
 
 def resample_data(x, downsample):
     len_x = len(x)
@@ -301,7 +284,7 @@ def _fit_and_evaluate(train_index, test_index, X, y, pipeline):
 
 from sklearn.multioutput import MultiOutputRegressor
 
-def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, y_test, model, numeric_column_indices=None,test = True):
+def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, y_test, model, numeric_column_indices=None,test = True, use_PCA=False, n_components=30):
     """
     Perform time series cross-validation with hyperparameters for a given model.
 
@@ -341,11 +324,15 @@ def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, 
     if multi_output:
         model_instance = MultiOutputRegressor(model_instance)
 
-    pipeline = Pipeline([
+    # Add PCA to the pipeline if PCA is True
+    steps = [
         ('preprocessor', preprocessor),
-        # ('pca', PCA(n_components=5)),
-        ('model', model_instance)
-    ])
+        ('model', model)
+    ]
+    if use_PCA:
+        steps.insert(1, ('pca', PCA(n_components=n_components)))  # Adjust n_components as needed
+
+    pipeline = Pipeline(steps)
     
     pipeline.fit(X_train, y_train)
     y_pred = pipeline.predict(X_test)
@@ -364,7 +351,7 @@ def time_series_cross_validation_with_hyperparameters(X_train, X_test, y_train, 
     else:  
         rmse_per_output = mean_squared_error(y_test, y_pred, squared=False, multioutput='raw_values')
 
-        return y_pred, importances_df,  rmse_per_output, 
+        return y_pred, importances_df,  rmse_per_output 
 
 
 # Define the context manager
