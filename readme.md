@@ -60,6 +60,8 @@ Once the preprocessing is complete, you can move onto testing. The `./test` dire
 - Scenario 3: `test_scenario_3.py`
 - Scenario 4: `test_scenario_4.py`
 
+**Note**: There is a folder named `/ACII_figures` that contains the scripts necessary for generating the figures used in our ACII 2023 workshop paper. Please refer to this folder if you are interested in replicating or understanding the visual representations from the publication.
+
 ### Results
 
 The prediction results for each of the four scenarios are stored in the `./results` directory.
